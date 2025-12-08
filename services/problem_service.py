@@ -191,6 +191,364 @@ def create_new_problem(data: dict):
                 "description": "Only one valid answer exists",
                 "order": 4
             }
-        ]
+        ],
+        
+        "editorial": {
+                "title": "Two sum",
 
+                    "overview": """
+                The **Two Sum** problem asks us to find two indices such that their values add up to a given target.
+
+                A few common approaches are:
+                - Brute Force using nested loops
+                - Hash Map for an optimal O(n) solution
+
+                Below are detailed explanations of both approaches.
+                """,
+
+                    "approaches": [
+                        {
+                            "id": "brute_force",
+                            "title": "Approach 1: Brute Force",
+                            "explanation": """
+                The simplest idea is to check every possible pair of numbers.
+
+                ### Algorithm
+                1. Loop through each index `i`
+                2. For each `i`, loop through each index `j > i`
+                3. If `nums[i] + nums[j] == target`, return `[i, j]`
+
+                ### Why it works
+                We explore all combinations, so if a solution exists, we will find it.
+
+                ### Complexity
+                - Time: O(n²)
+                - Space: O(1)
+                """,
+                            "code": {
+                                "python": """
+                class Solution:
+                    def twoSum(self, nums, target):
+                        for i in range(len(nums)):
+                            for j in range(i + 1, len(nums)):
+                                if nums[i] + nums[j] == target:
+                                    return [i, j]
+                """,
+                                "java": """
+                class Solution {
+                    public int[] twoSum(int[] nums, int target) {
+                        for (int i = 0; i < nums.length; i++) {
+                            for (int j = i + 1; j < nums.length; j++) {
+                                if (nums[i] + nums[j] == target) {
+                                    return new int[]{i, j};
+                                }
+                            }
+                        }
+                        return new int[]{};
+                    }
+                }
+                """,
+                                "cpp": """
+                class Solution {
+                public:
+                    vector<int> twoSum(vector<int>& nums, int target) {
+                        for (int i = 0; i < nums.size(); i++) {
+                            for (int j = i + 1; j < nums.size(); j++) {
+                                if (nums[i] + nums[j] == target) {
+                                    return {i, j};
+                                }
+                            }
+                        }
+                        return {};
+                    }
+                };
+                """
+                            }
+                        },
+
+                        {
+                            "id": "optimal_hashmap",
+                            "title": "Approach 2: Hash Map (Optimal O(n))",
+                            "explanation": """
+                We can solve the problem in **one pass** using a hash map.
+
+                ### Key Idea
+                While iterating over the array:
+                - Compute the complement: `target - nums[i]`
+                - If the complement is already in the map → we found the answer
+                - Otherwise, store the current number in the map
+
+                ### Algorithm
+                1. Create an empty hash map
+                2. Loop through each index `i`
+                3. Let `num = nums[i]`
+                4. Compute `complement = target - num`
+                5. If complement is in the map, return `[map[complement], i]`
+                6. Otherwise, store `map[num] = i`
+
+                ### Complexity
+                - Time: O(n)
+                - Space: O(n)
+                """,
+                            "code": {
+                                "python": """
+                class Solution:
+                    def twoSum(self, nums, target):
+                        seen = {}
+                        for i, value in enumerate(nums):
+                            complement = target - value
+                            if complement in seen:
+                                return [seen[complement], i]
+                            seen[value] = i
+                """,
+                                "java": """
+                class Solution {
+                    public int[] twoSum(int[] nums, int target) {
+                        Map<Integer, Integer> seen = new HashMap<>();
+
+                        for (int i = 0; i < nums.length; i++) {
+                            int complement = target - nums[i];
+
+                            if (seen.containsKey(complement)) {
+                                return new int[]{seen.get(complement), i};
+                            }
+
+                            seen.put(nums[i], i);
+                        }
+
+                        return new int[]{};
+                    }
+                }
+                """,
+                                "cpp": """
+                class Solution {
+                public:
+                    vector<int> twoSum(vector<int>& nums, int target) {
+                        unordered_map<int, int> seen;
+
+                        for (int i = 0; i < nums.size(); i++) {
+                            int complement = target - nums[i];
+
+                            if (seen.count(complement)) {
+                                return {seen[complement], i};
+                            }
+
+                            seen[nums[i]] = i;
+                        }
+
+                        return {};
+                    }
+                };
+                """
+                            }
+                        }
+                    ],
+
+                    "videoUrl": "https://www.youtube.com/watch?v=KLlXCFG5TnA"
+        },
+
+        "testcases": [
+            {
+                "input": "[2,7,11,15]\n9",
+                "expectedOutput": "[0,1]",
+                "isHidden": False,
+                "order": 1,
+                "explanation": ""
+            },
+            {
+                "input": "[3,2,4]\n6",
+                "expectedOutput": "[1,2]",
+                "isHidden": False,
+                "order": 2,
+                "explanation": ""
+            },
+            {
+                "input": "[3,3]\n6",
+                "expectedOutput": "[0,1]",
+                "isHidden": False,
+                "order": 3,
+                "explanation": ""
+            },
+            {
+                "input": "[1,5,3,7,8,9]\n12",
+                "expectedOutput": "[2,4]",
+                "isHidden": True,
+                "order": 4,
+                "explanation": ""
+            },
+            {
+                "input": "[-1,-2,-3,-4,-5]\n-8",
+                "expectedOutput": "[2,4]",
+                "isHidden": True,
+                "order": 5,
+                "explanation": ""
+            }
+        ],
+
+        "tags": [
+            {
+                "name": "Array",
+                "category": "topic"
+            },
+            {
+                "name": "Hash Table",
+                "category": "topic"
+            },
+            {
+                "name": "Google",
+                "category": "company"
+            },
+            {
+                "name": "Amazon",
+                "category": "company"
+            }
+        ],
+
+        "snippets": [
+            {
+                "code": "class Solution:\n    def twoSum(self, nums, target):\n        pass",
+                "lang": "python",
+                "compiler_language_id": 71
+            },
+            {
+                "code": "class Solution {\n    public int[] twoSum(int[] nums, int target) {\n        return new int[]{};\n    }\n}",
+                "lang": "java",
+                "compiler_language_id": 63
+            },
+            {
+                "code": "class Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        return {};\n    }\n};",
+                "lang": "cpp",
+                "compiler_language_id": 42
+            }
+        ]
     }
+
+
+
+    problem = Problem(
+        title=data.get('title'),
+        description=data.get('description'),
+        difficulty=data.get('difficulty'),
+        xp_reward=data.get('xp_reward', 0),
+    )
+
+    db.session.add(problem)
+    db.session.flush() # get problem.id
+
+
+    
+    
+    editorial = Editorial(
+        content_markdown=data.get('editorial'),
+        videoUrl=data['editorial']['videoUrl'],
+        problem_id=problem.id
+    )
+
+    db.session.add(editorial)
+
+
+
+
+    hints_data = data.get('hints', [])
+    for h in hints_data:
+        hint = Hint(
+            content=h.get('content'),
+            order=h.get('order'),
+            problem_id=problem.id
+        )
+
+        db.session.add(hint)
+
+
+    constraints_data = data.get('constraints', [])
+    for c in constraints_data:
+        constraint = Constraint(
+            content=c.get('description'),
+            order=h.get('order'),
+            problem_id=problem.id
+        )
+
+        db.session.add(constraint)
+
+
+    tags_data = data.get("tags", [])
+    for t in tags_data:
+
+        tag = Tag.query.filter_by(name=t.get("name")).first()
+        if not tag:
+            tag = Tag(
+                name=t.get("name"),
+                category=t.get("category")
+            )
+
+            db.session.add(tag)
+            db.session.flush()
+
+        problem_tag = ProblemTag(
+            problem_id=problem.id,
+            tag_id=tag.id
+        )
+
+        db.session.add(problem_tag)
+
+
+
+    snippets_data = data.get("snippets", [])
+    for s in snippets_data:
+        
+        lang_name = s.get("lang")
+        language = Language.query.filter_by(name=lang_name).first()
+        if not language:
+            language = Language(
+                name=lang_name,
+                compiler_language_id=s.get("compiler_language_id")
+            )
+
+            db.session.add(language)
+            db.session.flush()
+        
+
+        snippet = Snippet(
+            code=s.get("code"),
+            problem_id=problem.id,
+            language_id=language.id
+        )
+
+        db.session.add(snippet)
+    
+
+    testcases_data = data.get("testcases", [])
+    for tc in testcases_data:
+
+        testcase = Testcase(
+            input_data=tc.get('input'),
+            expected_output=tc.get("expectedOutput"),
+            explanation=tc.get("explanation"),
+            isHidden=tc.get('isHidden'),
+            order=tc.get('order'),
+            
+            problem_id=problem.id
+        )
+
+        db.session.add(testcase)
+    
+
+
+
+    
+
+    db.session.commit()
+    return {
+        "success": True,
+        "message": "Data stored successfully",
+        "data": {
+            "id": problem.id,
+            "title": problem.title
+        }
+    }
+
+
+
+
+
+    
