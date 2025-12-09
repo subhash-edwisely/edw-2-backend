@@ -10,7 +10,7 @@ class DifficultyEnum(enum.Enum):
 
 
 class Problem(db.Model):
-    __tablename_ = "problem"
+    __tablename__ = "problem"
 
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255), nullable=False, unique=True)
