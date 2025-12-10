@@ -9,7 +9,7 @@ def success(message="Success", data=None, status=200):
     }
 
     if data is not None:
-        response['data'] = data
+        response["data"] = data
 
     return jsonify(response), status
 
