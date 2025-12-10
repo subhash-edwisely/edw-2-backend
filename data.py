@@ -966,7 +966,7 @@ problem_4 = {
     "title": "Merge Two Sorted Lists",
     "description": "You are given the heads of two sorted linked lists list1 and list2.\n\nMerge the two lists into one sorted list. The list should be made by splicing together the nodes of the first two lists.\n\nReturn the head of the merged linked list.",
     "xpReward": 15,
-    "difficulty": "Easy",
+    "difficulty": "Medium",
     "hints": [
         {
             "content": "Use a dummy node to simplify edge cases and make the code cleaner.",
@@ -1363,7 +1363,7 @@ problem_5 = {
     "title": "Best Time to Buy and Sell Stock",
     "description": "You are given an array prices where prices[i] is the price of a given stock on the ith day.\n\nYou want to maximize your profit by choosing a single day to buy one stock and choosing a different day in the future to sell that stock.\n\nReturn the maximum profit you can achieve from this transaction. If you cannot achieve any profit, return 0.",
     "xpReward": 12,
-    "difficulty": "Easy",
+    "difficulty": "Hard",
     "hints": [
         {
             "content": "Think about tracking the minimum price seen so far as you iterate through the array.",

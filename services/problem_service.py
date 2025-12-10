@@ -155,7 +155,7 @@ def fetch_problem_testcases(problem_id: int):
 
 def create_new_problem(data):
     
-    # data = get_data()[6]
+    data = get_data()[0]
 
     print(Problem.query.filter_by(title=data.get('title')).first()) 
     if Problem.query.filter_by(title=data.get('title')).first() != None:    
