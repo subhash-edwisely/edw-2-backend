@@ -22,14 +22,17 @@ problem_bp = Blueprint("problem_routes", __name__)
 # ------------------ ROUTES ------------------
 
 @problem_bp.get("/")
+@jwt_required()
 def route_get_all_problems():
-    return get_all_problems()
+    user_id = str(get_jwt_identity())
+    return get_all_problems(user_id)
+
 
 
 @problem_bp.get("/<int:problem_id>")
 @jwt_required()
 def route_get_problem(problem_id):
-    user_id = get_jwt_identity()
+    user_id = str(get_jwt_identity())
     print(user_id, request.cookies)
     return get_problem(problem_id, user_id)
 

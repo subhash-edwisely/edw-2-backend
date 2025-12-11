@@ -8,6 +8,7 @@ from models.tag import Tag
 from models.language import Language
 from models.testcase import Testcase
 from models.submission import Submission
+from models.solved_problem import SolvedProblem
 from sqlalchemy.orm import joinedload, selectinload
 from db import db
 from data import get_data
@@ -15,28 +16,56 @@ import random
 
 
 
-def fetch_all_problems():
-    problems = Problem.query.all()
+def fetch_all_problems(user_id):
+    # problems = Problem.query.all()
+    # return [
+    #     {
+    #         "id": p.id,
+    #         "title": p.title,
+    #         "description": p.description,
+    #         "difficulty": p.difficulty.value if p.difficulty else None,
+    #         "xp_reward": p.xp_reward,
+    #         "created_at": p.created_at
+    #     } for p in problems
+    # ]
+
+
+    solved_ids = (s.problem_id for s in SolvedProblem.query.filter_by(user_id=user_id).with_entities(SolvedProblem.problem_id).all())
+
+    problems = Problem.query.options(
+        selectinload(Problem.tags).selectinload(ProblemTag.tag),
+    ).all()
+
     return [
         {
-            "id": p.id,
-            "title": p.title,
-            "description": p.description,
-            "difficulty": p.difficulty.value if p.difficulty else None,
-            "xp_reward": p.xp_reward,
-            "created_at": p.created_at
-        } for p in problems
+            "id": problem.id,
+            "title": problem.title,
+            "description": problem.description,
+            "difficulty": problem.difficulty.value if problem.difficulty else None,
+            "xp_reward": problem.xp_reward,
+            "created_at": problem.created_at,
+            "tags": [
+                {
+                    "id": t.tag_id,
+                    "name": t.tag.name if t.tag else None,
+                    "category": t.tag.category.value if t.tag and t.tag.category else None,
+                }
+
+                for t in problem.tags
+            ],
+            "solved_status": problem.id in solved_ids
+        } 
+        
+        for problem in problems
     ]
+
+    
+
 
 
 
 
 def fetch_problem_by_id(problem_id: int, user_id):
-    problem = Problem.query.get(problem_id)
-    if not problem:
-        return None
-    
-
     problem = (
         Problem.query.options(
             joinedload(Problem.editorial),
@@ -46,6 +75,9 @@ def fetch_problem_by_id(problem_id: int, user_id):
             selectinload(Problem.tags).selectinload(ProblemTag.tag),
             selectinload(Problem.testcases),
     ).get(problem_id))
+
+    if not problem:
+        return None
     
     submissions = Submission.query.filter_by(user_id=user_id, problem_id=problem_id).all()
 
@@ -136,112 +168,112 @@ def fetch_problem_by_id(problem_id: int, user_id):
 
 
 
-def fetch_problem_editorial(problem_id: int):
-    editorial = Editorial.query.filter_by(problem_id=problem_id).first()
-    if not editorial:
-        return None
+# def fetch_problem_editorial(problem_id: int):
+#     editorial = Editorial.query.filter_by(problem_id=problem_id).first()
+#     if not editorial:
+#         return None
     
-    return {
-        "id": editorial.id,
-        "problem_id": editorial.problem_id,
-        "content": editorial.content_markdown,
-        "videoUrl": editorial.videoUrl,
-        "created_at": editorial.created_at
-    }
+#     return {
+#         "id": editorial.id,
+#         "problem_id": editorial.problem_id,
+#         "content": editorial.content_markdown,
+#         "videoUrl": editorial.videoUrl,
+#         "created_at": editorial.created_at
+#     }
 
 
 
 
 
 
-def fetch_problem_hints(problem_id: int):
-    hints = Hint.query.filter_by(problem_id=problem_id).order_by(Hint.order).all()
+# def fetch_problem_hints(problem_id: int):
+#     hints = Hint.query.filter_by(problem_id=problem_id).order_by(Hint.order).all()
 
-    return [
-        {
-            "id": h.id,
-            "problem_id": h.problem_id,
-            "content": h.content,
-            "order": h.order,
-            "created_at": h.created_at
-        }
+#     return [
+#         {
+#             "id": h.id,
+#             "problem_id": h.problem_id,
+#             "content": h.content,
+#             "order": h.order,
+#             "created_at": h.created_at
+#         }
 
-        for h in hints
-    ]
-
-
+#         for h in hints
+#     ]
 
 
 
-def fetch_problem_constraints(problem_id: int):
-    constraints = Constraint.query.filter_by(problem_id=problem_id).order_by(Constraint.order).all()
 
 
-    return [
-        {
-            "id": c.id,
-            "problem_id": c.problem_id,
-            "content": c.description,
-            "order": c.order,
-            "created_at": c.created_at
-        }
+# def fetch_problem_constraints(problem_id: int):
+#     constraints = Constraint.query.filter_by(problem_id=problem_id).order_by(Constraint.order).all()
 
-        for c in constraints
-    ]
+
+#     return [
+#         {
+#             "id": c.id,
+#             "problem_id": c.problem_id,
+#             "content": c.description,
+#             "order": c.order,
+#             "created_at": c.created_at
+#         }
+
+#         for c in constraints
+#     ]
 
 
    
 
-def fetch_problem_snippets(problem_id: int):
-    snippets = Snippet.query.filter_by(problem_id=problem_id).all()
+# def fetch_problem_snippets(problem_id: int):
+#     snippets = Snippet.query.filter_by(problem_id=problem_id).all()
 
 
-    return [
-        {
-            "id": s.id,
-            "problem_id": s.problem_id,
-            "code": s.code,
-            "language_name": s.language.name if s.language else None,
-            "language_id": s.language.id if s.language else None,
-            "created_at": s.created_at
-        }
+#     return [
+#         {
+#             "id": s.id,
+#             "problem_id": s.problem_id,
+#             "code": s.code,
+#             "language_name": s.language.name if s.language else None,
+#             "language_id": s.language.id if s.language else None,
+#             "created_at": s.created_at
+#         }
 
-        for s in snippets
-    ]
-
-
+#         for s in snippets
+#     ]
 
 
-def fetch_problem_tags(problem_id: int):
-    tags = ProblemTag.query.filter_by(problem_id=problem_id).all()
-
-    return [
-        {
-            "id": t.tag_id,
-            "name": t.tag.name if t.tag else None,
-            "category": t.tag.category.value if t.tag and t.tag.category else None,
-        }
-
-        for t in tags
-    ]
 
 
-def fetch_problem_testcases(problem_id: int):
-    testcases = Testcase.query.filter_by(problem_id=problem_id).order_by(Testcase.order).all()
+# def fetch_problem_tags(problem_id: int):
+#     tags = ProblemTag.query.filter_by(problem_id=problem_id).all()
 
-    return [
-        {
-            "id": tc.id,
-            "input": tc.input_data,
-            "expected_output": tc.expected_output,
-            "explanation": tc.explanation,
-            "isHidden": tc.isHidden,
-            "order": tc.order,
-            "created_at": tc.created_at
-        }
+#     return [
+#         {
+#             "id": t.tag_id,
+#             "name": t.tag.name if t.tag else None,
+#             "category": t.tag.category.value if t.tag and t.tag.category else None,
+#         }
+
+#         for t in tags
+#     ]
+
+
+# def fetch_problem_testcases(problem_id: int):
+#     testcases = Testcase.query.filter_by(problem_id=problem_id).order_by(Testcase.order).all()
+
+#     return [
+#         {
+#             "id": tc.id,
+#             "input": tc.input_data,
+#             "expected_output": tc.expected_output,
+#             "explanation": tc.explanation,
+#             "isHidden": tc.isHidden,
+#             "order": tc.order,
+#             "created_at": tc.created_at
+#         }
         
-        for tc in testcases
-    ]
+#         for tc in testcases
+    # ]
 
 def create_new_problem(data):
     
@@ -377,30 +409,30 @@ def create_new_problem(data):
 
 
 
-def fetch_daily_challenge():
-    problems = Problem.query.all()
-    if not problems:
-        return None
+# def fetch_daily_challenge():
+#     problems = Problem.query.all()
+#     if not problems:
+#         return None
     
-    problem = random.choice(problems)
+#     problem = random.choice(problems)
     
-    # Organize tags by category
-    tag_dict = {}
-    for pt in problem.tags:
-        if pt.tag:  # Make sure tag exists
-            category = pt.tag.category.value if pt.tag.category else "General"
-            if category not in tag_dict:
-                tag_dict[category] = []
-            tag_dict[category].append(pt.tag.name)
+#     # Organize tags by category
+#     tag_dict = {}
+#     for pt in problem.tags:
+#         if pt.tag:  # Make sure tag exists
+#             category = pt.tag.category.value if pt.tag.category else "General"
+#             if category not in tag_dict:
+#                 tag_dict[category] = []
+#             tag_dict[category].append(pt.tag.name)
     
-    return {
-        "id": problem.id,
-        "title": problem.title,
-        "description": problem.description,
-        "difficulty": problem.difficulty.value,
-        "xp": problem.xp_reward,
-        "tags": tag_dict  # Now tags are grouped by category
-    }
+#     return {
+#         "id": problem.id,
+#         "title": problem.title,
+#         "description": problem.description,
+#         "difficulty": problem.difficulty.value,
+#         "xp": problem.xp_reward,
+#         "tags": tag_dict  # Now tags are grouped by category
+#     }
 
 
         
