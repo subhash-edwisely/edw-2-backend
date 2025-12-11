@@ -10,7 +10,7 @@ class Language(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # one-to-many-relationship
-    snippets = db.relationship("Snippet", back_populates="language", cascade="all,delete-orphan", lazy="dynamic")
+    snippets = db.relationship("Snippet", back_populates="language", cascade="all,delete-orphan", lazy="selectin")
     submission_answers = db.relationship("SubmissionAnswer", back_populates="language")
 
 

@@ -19,7 +19,7 @@ def create_app():
     app.config.from_object(Config)
 
     #CORS(app, resources={r"/api/*": {"origins": "*"}})
-    CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5173"]}},
+    CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5000"]}},
      supports_credentials=True,
      allow_headers=["Content-Type", "Authorization"],
      methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])

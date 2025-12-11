@@ -17,7 +17,7 @@ class Testcase(db.Model):
     problem_id = db.Column(db.Integer, db.ForeignKey("problem.id"), nullable=False)
     problem = db.relationship("Problem", back_populates="testcases")
 
-    testcase_results = db.relationship("TestcaseResult", back_populates="testcase", cascade="all,delete-orphan", lazy="dynamic")
+    testcase_results = db.relationship("TestcaseResult", back_populates="testcase", cascade="all,delete-orphan", lazy="selectin")
 
 
 

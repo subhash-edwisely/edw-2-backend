@@ -7,6 +7,8 @@ from models.problem_tag import ProblemTag
 from models.tag import Tag
 from models.language import Language
 from models.testcase import Testcase
+from models.submission import Submission
+from sqlalchemy.orm import joinedload, selectinload
 from db import db
 from data import get_data
 
@@ -28,18 +30,105 @@ def fetch_all_problems():
 
 
 
-def fetch_problem_by_id(problem_id: int):
+def fetch_problem_by_id(problem_id: int, user_id):
     problem = Problem.query.get(problem_id)
     if not problem:
         return None
     
+
+    problem = (
+        Problem.query.options(
+            joinedload(Problem.editorial),
+            selectinload(Problem.hints),
+            selectinload(Problem.constraints),
+            selectinload(Problem.snippets).selectinload(Snippet.language),
+            selectinload(Problem.tags).selectinload(ProblemTag.tag),
+            selectinload(Problem.testcases),
+    ).get(problem_id))
+    
+    submissions = Submission.query.filter_by(user_id=user_id, problem_id=problem_id).all()
+
+
     return {
             "id": problem.id,
             "title": problem.title,
             "description": problem.description,
             "difficulty": problem.difficulty.value if problem.difficulty else None,
             "xp_reward": problem.xp_reward,
-            "created_at": problem.created_at
+            "created_at": problem.created_at,
+            "editorial": {
+                "id": problem.editorial.id,
+                "problem_id": problem.editorial.problem_id,
+                "content": problem.editorial.content_markdown,
+                "videoUrl": problem.editorial.videoUrl,
+                "created_at": problem.editorial.created_at
+            },
+            "hints": [
+                {
+                    "id": h.id,
+                    "problem_id": h.problem_id,
+                    "content": h.content,
+                    "order": h.order,
+                    "created_at": h.created_at
+                }
+
+                for h in problem.hints
+            ],
+            "constraints": [
+                {
+                    "id": c.id,
+                    "problem_id": c.problem_id,
+                    "content": c.description,
+                    "order": c.order,
+                    "created_at": c.created_at
+                }
+
+                for c in problem.constraints
+            ],
+            "snippets": [
+                {
+                    "id": s.id,
+                    "problem_id": s.problem_id,
+                    "code": s.code,
+                    "language_name": s.language.name if s.language else None,
+                    "language_id": s.language.id if s.language else None,
+                    "created_at": s.created_at
+                }
+
+                for s in problem.snippets
+            ],
+            "tags": [
+                {
+                    "id": t.tag_id,
+                    "name": t.tag.name if t.tag else None,
+                    "category": t.tag.category.value if t.tag and t.tag.category else None,
+                }
+
+                for t in problem.tags
+            ],
+            "testcases": [
+                {
+                    "id": tc.id,
+                    "input": tc.input_data,
+                    "expected_output": tc.expected_output,
+                    "explanation": tc.explanation,
+                    "isHidden": tc.isHidden,
+                    "order": tc.order,
+                    "created_at": tc.created_at
+                }
+                
+                for tc in problem.testcases
+            ],
+            "submissions": [{
+                "id": sub.id,
+                "user_id": sub.user_id,
+                "problem_id": sub.problem_id,
+                "status": sub.status,
+                "created_at": sub.created_at,
+                "totalExecTime": sub.total_exec_time,
+                "totalExecMemory": sub.total_exec_memory,
+                "language_name": sub.language_name
+            } for sub in submissions ]
         }
 
 

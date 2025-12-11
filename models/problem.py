@@ -20,21 +20,21 @@ class Problem(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
-    # one-to-one
-    editorial = db.relationship("Editorial", back_populates="problem", cascade="all,delete-orphan", lazy="dynamic")
+    # one-to-one    
+    editorial = db.relationship("Editorial", back_populates="problem", cascade="all,delete-orphan", lazy="joined", uselist=False)
 
     # one-to-many
-    hints = db.relationship("Hint", back_populates="problem", cascade="all,delete-orphan", lazy="dynamic")
-    constraints = db.relationship("Constraint", back_populates="problem", cascade="all,delete-orphan", lazy="dynamic")
-    snippets = db.relationship("Snippet", back_populates="problem", cascade="all,delete-orphan", lazy="dynamic")
-    testcases = db.relationship("Testcase", back_populates="problem", cascade="all,delete-orphan", lazy="dynamic")
-    submissions = db.relationship("Submission", back_populates="problem", cascade="all,delete-orphan", lazy="dynamic")
-    testcase_results = db.relationship("TestcaseResult", back_populates="problem", cascade="all,delete-orphan", lazy="dynamic")
-    solved_users = db.relationship("SolvedProblem", back_populates="problem", cascade="all,delete-orphan", lazy="dynamic")
+    hints = db.relationship("Hint", back_populates="problem", cascade="all,delete-orphan", lazy="selectin")
+    constraints = db.relationship("Constraint", back_populates="problem", cascade="all,delete-orphan", lazy="selectin")
+    snippets = db.relationship("Snippet", back_populates="problem", cascade="all,delete-orphan", lazy="selectin")
+    testcases = db.relationship("Testcase", back_populates="problem", cascade="all,delete-orphan", lazy="selectin")
+    submissions = db.relationship("Submission", back_populates="problem", cascade="all,delete-orphan", lazy="selectin")
+    testcase_results = db.relationship("TestcaseResult", back_populates="problem", cascade="all,delete-orphan", lazy="selectin")
+    solved_users = db.relationship("SolvedProblem", back_populates="problem", cascade="all,delete-orphan", lazy="selectin")
 
 
     # many-to-many (b/w problem and tag via problem_tag)
-    tags =  db.relationship("ProblemTag", back_populates="problem", cascade="all,delete-orphan", lazy="dynamic")
+    tags =  db.relationship("ProblemTag", back_populates="problem", cascade="all,delete-orphan", lazy="selectin")
 
 
 

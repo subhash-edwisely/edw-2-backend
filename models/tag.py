@@ -18,7 +18,7 @@ class Tag(db.Model):
 
 
     # many-to-many (b/w problem and tag via problem_tag)
-    problems = db.relationship("ProblemTag", back_populates="tag", lazy="dynamic", cascade="all,delete-orphan")
+    problems = db.relationship("ProblemTag", back_populates="tag", lazy="selectin", cascade="all,delete-orphan")
 
 
     def __repr__(self):

@@ -9,10 +9,13 @@ class Submission(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     status = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    total_exec_time = db.Column(db.Float)
+    total_exec_memory = db.Column(db.Float)
+    language_name = db.Column(db.String(255))
 
 
 
-    submission_answer = db.relationship("SubmissionAnswer", back_populates="submission", cascade="all,delete-orphan", lazy="dynamic")
+    submission_answer = db.relationship("SubmissionAnswer", back_populates="submission", cascade="all,delete-orphan", lazy="selectin")
 
 
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
@@ -22,7 +25,7 @@ class Submission(db.Model):
     problem = db.relationship("Problem", back_populates="submissions")
 
 
-    testcase_results = db.relationship("TestcaseResult", back_populates="submission", cascade="all,delete-orphan", lazy="dynamic")
+    testcase_results = db.relationship("TestcaseResult", back_populates="submission", cascade="all,delete-orphan", lazy="selectin")
 
 
 
