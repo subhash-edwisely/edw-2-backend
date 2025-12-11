@@ -9,7 +9,8 @@ from services.problem_service import (
     fetch_problem_snippets,
     fetch_problem_tags,
     fetch_problem_testcases,
-    create_new_problem
+    create_new_problem,
+    fetch_daily_challenge
 )
 
 
@@ -112,5 +113,14 @@ def create_problem(data):
 
         return success(data=problem, message="Problem created successfully")
     
+    except Exception as e:
+        return error(str(e))
+    
+def get_daily_challenge():
+    try:
+        daily_problem = fetch_daily_challenge()
+        if not daily_problem:
+            return error("No problems found", 404)
+        return success(data=daily_problem)
     except Exception as e:
         return error(str(e))

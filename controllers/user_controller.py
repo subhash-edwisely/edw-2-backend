@@ -4,7 +4,8 @@ from services.user_service import (
     fetch_all_users, 
     fetch_user_by_id,
     register,
-    login
+    login,
+    fetch_user_progress
 )
 
 from utils.response import success, error
@@ -97,3 +98,7 @@ def login_user(data):
     
     except Exception as e:
         return error(str(e))
+
+
+
+

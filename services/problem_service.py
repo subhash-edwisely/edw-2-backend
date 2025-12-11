@@ -11,6 +11,7 @@ from models.submission import Submission
 from sqlalchemy.orm import joinedload, selectinload
 from db import db
 from data import get_data
+import random
 
 
 
@@ -376,6 +377,30 @@ def create_new_problem(data):
 
 
 
+def fetch_daily_challenge():
+    problems = Problem.query.all()
+    if not problems:
+        return None
+    
+    problem = random.choice(problems)
+    
+    # Organize tags by category
+    tag_dict = {}
+    for pt in problem.tags:
+        if pt.tag:  # Make sure tag exists
+            category = pt.tag.category.value if pt.tag.category else "General"
+            if category not in tag_dict:
+                tag_dict[category] = []
+            tag_dict[category].append(pt.tag.name)
+    
+    return {
+        "id": problem.id,
+        "title": problem.title,
+        "description": problem.description,
+        "difficulty": problem.difficulty.value,
+        "xp": problem.xp_reward,
+        "tags": tag_dict  # Now tags are grouped by category
+    }
 
 
         

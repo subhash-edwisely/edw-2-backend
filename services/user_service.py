@@ -4,7 +4,7 @@ from db import db
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import create_access_token
 from datetime import timedelta
-
+from utils.response import error
 
 bcrypt = Bcrypt()
 
@@ -47,7 +47,8 @@ def register(data: dict):
     email = data.get("email")
     username = data.get("email")
     password = data.get("password")
-    college_name = data.get("college_name")
+    college_name = data.get('college_name') or "Unknown College"
+    college = College(name=college_name)
 
 
     user_check_by_email = User.query.filter_by(email=email).first()
@@ -138,3 +139,22 @@ def login(data: dict):
         "access_token": access_token  # Include token in response
     }
 
+def fetch_user_progress(user_id: int):
+    user = User.query.get(user_id)
+    if not user:
+        return None
+
+    total_solved = user.solved_problems.count()
+    submissions = user.submissions.count()
+
+    progress = {
+        "user_id": user.id,
+        "name": user.name,
+        "username": user.username,
+        "total_xp": user.total_xp,
+        "problems_solved": total_solved,
+        "total_submissions": submissions,
+        "created_at": user.created_at,
+    }
+
+    return progress
