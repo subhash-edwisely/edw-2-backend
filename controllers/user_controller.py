@@ -2,7 +2,8 @@ from services.user_service import (
     fetch_all_users, 
     fetch_user_by_id,
     register,
-    login
+    login,
+    fetch_user_progress
 )
 
 from utils.response import success, error
@@ -62,6 +63,19 @@ def login_user(data):
     except Exception as e:
         return error(str(e))
 
+def get_user_progress(user_id: int):
+    try:
+        progress = fetch_user_progress(user_id)
+        if not progress:
+            return error("User not found", 404)
 
+        return success(
+            data=progress, 
+            message="User progress fetched successfully", 
+            status=200
+        )
+
+    except Exception as e:
+        return error(str(e))
 
 
