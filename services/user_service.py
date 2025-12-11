@@ -84,17 +84,23 @@ def register(data: dict):
     db.session.add(new_user)
     db.session.commit()
 
+     # --- Auto-login: create JWT ---
+    access_token = create_access_token(
+        identity=str(new_user.id),
+        expires_delta=timedelta(days=7)
+    )
+
     return {
-        "success": True,
-        "message": "User registered successfully",
-        "data": {
+        "user": {
             "id": new_user.id,
             "name": new_user.name,
             "email": new_user.email,
-            "college": new_user.college.name,
+            "username": new_user.username,
             "role": new_user.role.value,
+            "college": new_user.college.name,
             "created_at": new_user.created_at
-        }
+        },
+        "access_token": access_token  # Include token in response
     }
 
 
@@ -103,8 +109,8 @@ def login(data: dict):
     email = data.get('email')
     password = data.get('password')
 
-
     user = User.query.filter_by(email=email).first()
+
     if not user:
         return None
     
@@ -115,14 +121,13 @@ def login(data: dict):
 
 
     access_token = create_access_token(
-        identity=user.id,
+        identity=str(user.id),
         expires_delta=timedelta(days=7)
     )
 
 
 
     return {
-        "token": access_token,
         "user": {
             "id": user.id,
             "name": user.name,
@@ -130,7 +135,8 @@ def login(data: dict):
             "username": user.username,
             "role": user.role.value,
             "college": user.college.name
-        }
+        },
+        "access_token": access_token  # Include token in response
     }
 
 def fetch_user_progress(user_id: int):

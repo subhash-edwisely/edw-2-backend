@@ -25,8 +25,8 @@ class User(db.Model):
     college = db.relationship("College", back_populates="students")
 
 
-    submissions = db.relationship("Submission", back_populates="user", cascade="all,delete-orphan", lazy="dynamic")
-    solved_problems = db.relationship("SolvedProblem", back_populates="user", cascade="all,delete-orphan", lazy="dynamic")
+    submissions = db.relationship("Submission", back_populates="user", cascade="all,delete-orphan", lazy="selectin")
+    solved_problems = db.relationship("SolvedProblem", back_populates="user", cascade="all,delete-orphan", lazy="selectin")
 
 
 

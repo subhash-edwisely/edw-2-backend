@@ -27,9 +27,9 @@ def get_all_problems():
     
 
 
-def get_problem(problem_id: int):
+def get_problem(problem_id: int, user_id: int):
     try:
-        problem = fetch_problem_by_id(problem_id)
+        problem = fetch_problem_by_id(problem_id, user_id)
         if not problem:
             return error("Problem not found", 404)
         return success(data=problem)

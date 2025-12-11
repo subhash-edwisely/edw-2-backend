@@ -34,13 +34,6 @@ def fetch_submissions_of_user_for_problem(user_id: int, problem_id: int):
     submission_answers = []
 
     for sub in submissions:
-        submissions_data.append({
-            "id": sub.id,
-            "user_id": sub.user_id,
-            "problem_id": sub.problem_id,
-            "status": sub.status,
-            "created_at": convert_to_ist(sub.created_at),
-        })
 
         sub_ans = SubmissionAnswer.query.filter_by(submission_id=sub.id).first()
         if sub_ans:
@@ -54,9 +47,21 @@ def fetch_submissions_of_user_for_problem(user_id: int, problem_id: int):
                 "totalExecTime": sub_ans.totalExecTime,
                 "totalExecMemory": sub_ans.totalExecMemory,
                 "status": sub_ans.status,
-                "mode": sub_ans.mode,
+                # "mode": sub_ans.mode.value,
                 "created_at": convert_to_ist(sub_ans.created_at)
             })
+
+
+        submissions_data.append({
+            "id": sub.id,
+            "user_id": sub.user_id,
+            "problem_id": sub.problem_id,
+            "status": sub.status,
+            "created_at": convert_to_ist(sub.created_at),
+            "totalExecTime": sub_ans.totalExecTime,
+            "totalExecMemory": sub_ans.totalExecMemory,
+            "language_name": sub_ans.language_name
+        })
     
     return {
         "submissions": submissions_data,
@@ -221,7 +226,11 @@ def create_new_submission(data):
         submission = Submission(
             user_id=user_id, 
             problem_id=problem_id, 
-            status=overall_status
+            status=overall_status,
+            total_exec_time=total_time,
+            total_exec_memory=total_memory,
+            language_name=language_name
+
         )
         db.session.add(submission)
         db.session.flush()  # Get submission.id without committing
@@ -235,7 +244,7 @@ def create_new_submission(data):
             totalExecTime=total_time,
             totalExecMemory=total_memory,
             status=overall_status,
-            mode=mode_enum
+            mode=mode_enum.value
         )
         db.session.add(submission_answer)
 
