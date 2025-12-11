@@ -27,7 +27,7 @@ def get_all_problems():
     
 
 
-def get_problem(problem_id: int, user_id: int):
+def get_problem(problem_id: int, user_id):
     try:
         problem = fetch_problem_by_id(problem_id, user_id)
         if not problem:
