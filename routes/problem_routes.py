@@ -9,7 +9,8 @@ from controllers.problem_controller import (
     get_problem_snippets,
     get_problem_tags,
     get_problem_testcases,
-    create_problem
+    create_problem,
+    get_daily_challenge
 )
 
 
@@ -65,6 +66,9 @@ def route_create_problem():
     return create_problem({})
 
 
+@problem_bp.get("/daily")
+def route_get_daily_challenge():
+    return get_daily_challenge()
 
 # delete problem
 
