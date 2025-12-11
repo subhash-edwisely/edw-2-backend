@@ -3,23 +3,23 @@ from flask import jsonify
 from services.problem_service import (
     fetch_all_problems,
     fetch_problem_by_id,
-    fetch_problem_editorial,
-    fetch_problem_hints,
-    fetch_problem_constraints,
-    fetch_problem_snippets,
-    fetch_problem_tags,
-    fetch_problem_testcases,
+    # fetch_problem_editorial,
+    # fetch_problem_hints,
+    # fetch_problem_constraints,
+    # fetch_problem_snippets,
+    # fetch_problem_tags,
+    # fetch_problem_testcases,
     create_new_problem,
-    fetch_daily_challenge
+    # fetch_daily_challenge
 )
 
 
 from utils.response import success, error
 
 
-def get_all_problems():
+def get_all_problems(user_id):
     try:
-        problems = fetch_all_problems()
+        problems = fetch_all_problems(user_id)
         return success(data=problems)
     
     except Exception as e:

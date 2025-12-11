@@ -11,7 +11,7 @@ class ProblemTag(db.Model):
 
 
     problem = db.relationship("Problem", back_populates="tags")
-    tag = db.relationship("Tag", back_populates="problems")
+    tag = db.relationship("Tag", back_populates="problems", lazy="joined")
 
 
     __table_args__ = (
