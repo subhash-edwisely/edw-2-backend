@@ -70,9 +70,9 @@ def route_create_problem():
     return create_problem({})
 
 
-@problem_bp.get("/daily")
-def route_get_daily_challenge():
-    return get_daily_challenge()
+# @problem_bp.get("/daily")
+# def route_get_daily_challenge():
+#     return get_daily_challenge()
 
 # delete problem
 
