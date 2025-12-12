@@ -98,12 +98,19 @@ def create_new_submission(data):
     Only stores data in DB after Judge0 completes execution.
     """
 
+    print("dataaaaa:", data)
+
     # --- 1) Validate / extract ---
     user_id = data.get("user_id")
     problem_id = data.get("problem_id")
     source_code = data.get("source_code")
     language_name = data.get("language_name")
     mode = data.get("mode", "Submit")
+
+
+    print('modeeeee:', mode)
+
+
 
     if not all([user_id, problem_id, source_code, language_name]):
         raise Exception("Missing required fields (user_id, problem_id, source_code, language_name)")
@@ -236,7 +243,10 @@ def create_new_submission(data):
         db.session.flush()  # Get submission.id without committing
 
         # Store SubmissionAnswer
-        mode_enum = ModeEnum.Submit if mode.lower() == "submit" else ModeEnum.Run
+        # mode_enum = ModeEnum.Submit.value if mode.lower() == "submit" else ModeEnum.Run.value
+
+        # print('mode_enum    ::' , mode_enum)
+
         submission_answer = SubmissionAnswer(
             submission_id=submission.id,
             code=source_code,
@@ -244,7 +254,7 @@ def create_new_submission(data):
             totalExecTime=total_time,
             totalExecMemory=total_memory,
             status=overall_status,
-            mode=mode_enum.value
+            mode=mode.capitalize()
         )
         db.session.add(submission_answer)
 
