@@ -83,14 +83,15 @@ def login_user(data):
         
         # Set cookie
         response.set_cookie(
-            key="access_token",
-            value=result["access_token"],
-            max_age=7*24*60*60,
-            path="/",
-            secure=False,
-            httponly=True,
-            samesite="Lax"
+        key="access_token",
+        value=result["access_token"],
+        max_age=7*24*60*60,
+        path="/",
+        secure=True,  # Must be True for samesite=None on HTTPS
+        httponly=True,
+        samesite="None"  # Allow cross-site
         )
+
 
         print(response.headers, response)
         
