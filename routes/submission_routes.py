@@ -26,6 +26,10 @@ def route_get_submissions_of_user_for_problem(user_id, problem_id):
 @jwt_required()
 def route_create_submission():
     data = request.json
+
+    print("data from routes ::::::", data)
+
+
     user_id = get_jwt_identity()
 
     data["user_id"] = user_id
