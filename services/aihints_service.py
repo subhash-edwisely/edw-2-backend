@@ -62,17 +62,12 @@ class AIHintService:
                 "message": "Hint already unlocked",
                 "hintId": hint.id
             }
-
         if user.total_xp < hint.cost:
             raise ValueError("Not enough XP")
 
-        source = Source.query.filter_by(name="ai_help").first()
-        feature = Feature.query.filter_by(name="hint").first()
-
-        if not source or not feature:
-            raise ValueError("XP metadata not configured")
-
         user.total_xp -= hint.cost
+
+        
 
         user_hint = UserAIHint(
             id=generate_uuid(),
@@ -98,12 +93,13 @@ class AIHintService:
         return {
             "message": "Hint unlocked successfully",
             "hint": {
-                "id": hint.id,
-                "level": hint.level,
-                "label": hint.label,
-                "content": hint.content,
-                "cost": hint.cost,
-                "locked": False
-            },
+            "id": hint.id,
+            "level": hint.level,
+            "label": hint.label,
+            "content": hint.content,
+            "cost": hint.cost,
+            "locked": False
+             },
             "remainingXP": user.total_xp
+
         }

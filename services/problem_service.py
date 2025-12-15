@@ -66,6 +66,17 @@ def fetch_all_problems(user_id):
 
 
 def fetch_problem_by_id(problem_id: int, user_id):
+
+
+    # problem = Problem.query.filter(Problem.id == problem_id).first()
+    # editorial = Editorial.query.join(Problem).filter(Problem.id == problem_id).first()
+    # hints = Hint.query.join(Problem).filter(Problem.id == problem_id).order_by(Hint.order).all()
+    # constraints = Constraint.query.join(Problem).filter(Problem.id == problem_id).order_by(Constraint.order).all()
+    # snippets = Snippet.query.join(Problem).filter(Problem.id == problem_id).all()
+    # tags = Tag.query.join(ProblemTag).join(Problem).filter(Problem.id == problem_id).order_by(Tag.order).all()
+    # testcases = Testcase.query.join(Problem).filter(Problem.id == problem_id).order_by(Testcase.order).all()
+
+
     problem = (
         Problem.query.options(
             joinedload(Problem.editorial),
@@ -74,7 +85,13 @@ def fetch_problem_by_id(problem_id: int, user_id):
             selectinload(Problem.snippets).selectinload(Snippet.language),
             selectinload(Problem.tags).selectinload(ProblemTag.tag),
             selectinload(Problem.testcases),
-    ).get(problem_id))
+        ).filter(Problem.id == problem_id).first()
+    )
+
+
+    languages = {snippet.language for snippet in problem.snippets if snippet.language is not None}
+
+    print("Languages:", languages)
 
     if not problem:
         return None
@@ -161,7 +178,13 @@ def fetch_problem_by_id(problem_id: int, user_id):
                 "totalExecTime": sub.total_exec_time,
                 "totalExecMemory": sub.total_exec_memory,
                 "language_name": sub.language_name
-            } for sub in submissions ]
+            } for sub in submissions ],
+
+            "languages": [{
+                "id": lang.id,
+                "name": lang.name,
+                "compiler_language_id": lang.compiler_language_id
+            } for lang in languages]
         }
 
 
