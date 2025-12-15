@@ -6,8 +6,9 @@ from .language_routes import language_bp
 from .tag_routes import tag_bp
 from .root_routes import root_bp
 from .submission_routes import submission_bp
-from .aihints_routes import aihints_bp  # <-- import your AI hints routes
-
+from .aihints_routes import aihints_bp
+# <-- import your AI hints routes
+from .ai_routes import ai_routes
 
 def register_routes(app):
     app.register_blueprint(root_bp)

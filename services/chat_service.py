@@ -67,7 +67,7 @@ def get_chat_history_for_problem(user_id, problem_id):
     if not session:
         return []
 
-    return session.messages
+    return ChatMessage.query.filter_by(session_id=session.id).order_by(ChatMessage.created_at).all()
 
 
 MAX_CONTEXT_MESSAGES = 12
