@@ -89,10 +89,15 @@ class AIHintService:
         )
 
         db.session.add_all([user, user_hint, xp_txn])
-        db.session.commit()
-
         return {
             "message": "Hint unlocked successfully",
-            "hintId": hint.id,
+            "hint": {
+            "id": hint.id,
+            "level": hint.level,
+            "label": hint.label,
+            "content": hint.content,
+            "cost": hint.cost,
+            "locked": False
+             },
             "remainingXP": user.totalXP
         }
