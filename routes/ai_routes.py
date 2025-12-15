@@ -6,7 +6,7 @@ ai_bp = Blueprint("ai", __name__, url_prefix="/api/ai")
 
 chat_history_store = {}
 
-GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent"
+GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent"
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
 
