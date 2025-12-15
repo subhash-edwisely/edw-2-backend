@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from services.chat_service import handle_user_message, get_chat_history_for_user
+from services.chat_service import handle_user_message, get_chat_history_for_problem
 
 ai_routes = Blueprint("ai_routes", __name__, url_prefix="/api/ai")
 
@@ -44,7 +44,7 @@ def fetch_chat_history(problem_id):
     user_id = get_jwt_identity()
 
     try:
-        history = get_chat_history_for_user(user_id, problem_id)
+        history = get_chat_history_for_problem(user_id, problem_id)
         return jsonify({
             "success": True,
             "data": history

@@ -2,7 +2,7 @@ from flask import request, jsonify
 from flask_jwt_extended import get_jwt_identity
 from services.chat_service import (
     handle_user_message,
-    get_chat_history_for_problem
+    get_chat_history_for_user
 )
 
 def send_ai_message():
