@@ -17,3 +17,4 @@ def register_routes(app):
     app.register_blueprint(tag_bp, url_prefix="/api/v1/tags")
     app.register_blueprint(submission_bp, url_prefix="/api/v1/submissions")
     app.register_blueprint(aihints_bp, url_prefix="/api/v1/aihints")  # <-- register it
+    app.register_blueprint(ai_routes, url_prefix="/api/v1/ai")
