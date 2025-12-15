@@ -82,13 +82,14 @@ class AIHintService:
             user_id=user.id,
             amount=hint.cost,
             transaction_type="spent",
-            source_id=Source.query.filter_by(name="ai_help").first().id,
-            feature_id=Feature.query.filter_by(name="hint").first().id,
+            source=source,
+            feature=feature,
             reference_id=hint.id,
             description=f"Unlocked AI hint L{hint.level} for problem {hint.problem_id}"
         )
 
         db.session.add_all([user, user_hint, xp_txn])
+
         return {
             "message": "Hint unlocked successfully",
             "hint": {
