@@ -23,7 +23,7 @@ def create_app():
     # This must be called before accessing the database engine or session with the app.
     db.init_app(app)
     migrate = Migrate(app, db)
-    JWTManager(app)
+    #JWTManager(app)
     register_routes(app)
 
     import models
