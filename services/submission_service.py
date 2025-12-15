@@ -14,12 +14,20 @@ from models.submissions_answer import ModeEnum
 from models.user import User
 import time
 import math
+import base64
+from sqlalchemy.orm import joinedload
 
 JUDGE0_URL = "http://16.171.168.56:2358" 
 POLL_TIMEOUT = 300  # 5 minutes max polling time
 POLL_INTERVAL = 1   # Poll every 1 second
 IST = pytz.timezone('Asia/Kolkata')
 
+
+def decode_base64(s):
+    try: 
+        return base64.b64decode(s).decode('utf-8')
+    except Exception as e:
+        return s or ""
 
 def convert_to_ist(utc_dt):
     """Convert UTC datetime to IST"""
@@ -29,46 +37,46 @@ def convert_to_ist(utc_dt):
         utc_dt = pytz.utc.localize(utc_dt)
     return utc_dt.astimezone(IST).isoformat()
 
-def fetch_submissions_of_user_for_problem(user_id: int, problem_id: int):
-    submissions = Submission.query.filter_by(user_id=user_id, problem_id=problem_id).all()
+# def fetch_submissions_of_user_for_problem(user_id: int, problem_id: int):
+#     submissions = Submission.query.filter_by(user_id=user_id, problem_id=problem_id).all()
     
-    submissions_data = []
-    submission_answers = []
+#     submissions_data = []
+#     submission_answers = []
 
-    for sub in submissions:
+#     for sub in submissions:
 
-        sub_ans = SubmissionAnswer.query.filter_by(submission_id=sub.id).first()
-        if sub_ans:
-            lang = Language.query.filter_by(id=sub_ans.language_id).first()
-            submission_answers.append({
-                "id": sub_ans.id,
-                "submission_id": sub_ans.submission_id,
-                "code": sub_ans.code,
-                "language_id": sub_ans.language_id,
-                "language_name": lang.name if lang else None,
-                "totalExecTime": sub_ans.totalExecTime,
-                "totalExecMemory": sub_ans.totalExecMemory,
-                "status": sub_ans.status,
-                # "mode": sub_ans.mode.value,
-                "created_at": convert_to_ist(sub_ans.created_at)
-            })
+#         sub_ans = SubmissionAnswer.query.filter_by(submission_id=sub.id).first()
+#         if sub_ans:
+#             lang = Language.query.filter_by(id=sub_ans.language_id).first()
+#             submission_answers.append({
+#                 "id": sub_ans.id,
+#                 "submission_id": sub_ans.submission_id,
+#                 "code": sub_ans.code,
+#                 "language_id": sub_ans.language_id,
+#                 "language_name": lang.name if lang else None,
+#                 "totalExecTime": sub_ans.totalExecTime,
+#                 "totalExecMemory": sub_ans.totalExecMemory,
+#                 "status": sub_ans.status,
+#                 # "mode": sub_ans.mode.value,
+#                 "created_at": convert_to_ist(sub_ans.created_at)
+#             })
 
 
-        submissions_data.append({
-            "id": sub.id,
-            "user_id": sub.user_id,
-            "problem_id": sub.problem_id,
-            "status": sub.status,
-            "created_at": convert_to_ist(sub.created_at),
-            "totalExecTime": sub_ans.totalExecTime,
-            "totalExecMemory": sub_ans.totalExecMemory,
-            "language_name": sub_ans.language_name
-        })
+#         submissions_data.append({
+#             "id": sub.id,
+#             "user_id": sub.user_id,
+#             "problem_id": sub.problem_id,
+#             "status": sub.status,
+#             "created_at": convert_to_ist(sub.created_at),
+#             "totalExecTime": sub_ans.totalExecTime,
+#             "totalExecMemory": sub_ans.totalExecMemory,
+#             "language_name": sub_ans.language_name
+#         })
     
-    return {
-        "submissions": submissions_data,
-        "submission_answers": submission_answers
-    }
+#     return {
+#         "submissions": submissions_data,
+#         "submission_answers": submission_answers
+#     }
 
 
 def fetch_submissions_of_user(user_id: int):
@@ -84,6 +92,27 @@ def fetch_submissions_of_user(user_id: int):
         })
     
     return submissions_data
+
+
+def fetch_submission_by_id(submission_id: int):
+
+    submission = Submission.query.options(
+        joinedload(Submission.submission_answer)
+    ).filter(Submission.id == submission_id).first()
+
+    return {
+        "id": submission.submission_answer.id,
+        "submission_id": submission.id,
+        "code": submission.submission_answer.code,
+        "total_exec_time": submission.total_exec_time,
+        "total_exec_memory": submission.total_exec_memory,
+        "status": submission.status,
+        "mode": submission.submission_answer.mode.value,
+        "created_at": submission.created_at,
+        "language_name": submission.language_name,
+        "total_testcases": submission.submission_answer.total_testcases,
+        "testcases_executed": submission.submission_answer.testcases_executed
+    }
 
 
 def create_new_submission(data):
@@ -117,16 +146,18 @@ def create_new_submission(data):
     print(judge0_lang_id)
 
     if(mode.lower() == "run"):
-        testcases = Testcase.query.filter_by(problem_id=problem_id, isHidden=False)
+        testcases = Testcase.query.filter_by(problem_id=problem_id, isHidden=False).all()
     else:
-        testcases = Testcase.query.filter_by(problem_id=problem_id)
+        testcases = Testcase.query.filter_by(problem_id=problem_id).all()
+
+
 
     submissions_data = [
         {
-            "source_code": source_code,
+            "source_code": base64.b64encode(source_code.encode("utf-8")).decode("utf-8"),
             "language_id": judge0_lang_id,
-            "stdin": tc.input_data,
-            "expected_output": tc.expected_output
+            "stdin": base64.b64encode(tc.input_data.encode("utf-8")).decode("utf-8"),
+            "expected_output": base64.b64encode(tc.expected_output.encode("utf-8")).decode("utf-8")
         }
         for tc in testcases
     ]
@@ -143,7 +174,7 @@ def create_new_submission(data):
             break
 
         batch_post_res = requests.post(
-            url=f"{JUDGE0_URL}/submissions/batch?base64_encoded=false&wait=false",
+            url=f"{JUDGE0_URL}/submissions/batch?base64_encoded=true&wait=false",
             json={"submissions": submissions_data[50*i: 50*(i+1)]}
         )
 
@@ -158,10 +189,16 @@ def create_new_submission(data):
             while True:
 
                 get_res = requests.get(
-                    url=f"{JUDGE0_URL}/submissions/{token}?base64_encoded=false"
+                    url=f"{JUDGE0_URL}/submissions/{token}?base64_encoded=true"
                 )
 
                 result = get_res.json()
+                result['stdout'] = decode_base64(result['stdout'])
+                result['stderr'] = decode_base64(result['stderr'])
+                result['compile_output'] = decode_base64(result['compile_output'])
+                result['message'] = decode_base64(result['message'])
+
+                print("result : ", result)
                 
                 # Check if processing is complete (not queued or processing)
                 if(result['status']['id'] not in [1, 2]):
@@ -239,7 +276,9 @@ def create_new_submission(data):
             totalExecTime=total_time,
             totalExecMemory=total_memory,
             status=overall_status,
-            mode=mode.capitalize()
+            mode=mode.capitalize(),
+            testcases_executed=len(submission_results),  # May be less than total if early exit
+            total_testcases=len(submissions_data),
         )
         db.session.add(submission_answer)
 
@@ -249,17 +288,21 @@ def create_new_submission(data):
 
             print(res)
 
-            time_in_seconds = float(res.get("time") or 0)
-            memory_in_kb = float(res.get("memory") or 0)
-            
+            status_description = "Unknown"
+    
+            if "status" in res and res["status"]:
+                status_description = res["status"].get("description", "Unknown")
+            elif "error" in res:
+                status_description = f"Error: {res['error']}"
+
             tc_result = TestcaseResult(
                 problem_id=problem_id,
                 submission_id=submission.id,
                 testcase_id=tc.id,
-                status=res["status"]["description"],
-                execTime=time_in_seconds * 1000,  # Convert to milliseconds
-                execMemory=memory_in_kb / 1024,   # Convert to MB
-                expected_output=res.get("stdout") or "No stdout",
+                status=status_description,
+                execTime=float(res.get("time") or 0) * 1000,  # milliseconds
+                execMemory=float(res.get("memory") or 0) / 1024,  # MB
+                expected_output=tc.expected_output,
                 error_message=(res.get("stderr") or res.get("compile_output") or "")
             )
             db.session.add(tc_result)
@@ -305,14 +348,20 @@ def create_new_submission(data):
         "max_memory": max_memory,  # in MB (highest memory usage)
         "testcase_count": testcase_count,
         "executed_testcase_count": len(submission_results),  # May be less than total if early exit
+        "total_testcases_count": len(submissions_data),
+        "language_name": language_name,
+        "code": source_code,
         "testcase_results": [
             {
                 "testcase_id": tc.id,
-                "status": res["status"]["description"],
-                "time": float(res.get("time") or 0) * 1000,  # milliseconds
-                "memory": float(res.get("memory") or 0) / 1024,  # MB
+                "input": tc.input_data,
+                "expected_output": tc.expected_output,
+                "status": (res.get("status") or {}).get("description") or res.get("error") or "Unknown",
+                "time": float(res.get("time") or 0) * 1000,
+                "memory": float(res.get("memory") or 0) / 1024,
                 "output": res.get("stdout") or ""
             }
             for tc, res in zip(list(testcases)[:len(submission_results)], submission_results)
         ]
+
     }

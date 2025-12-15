@@ -15,7 +15,7 @@ class Submission(db.Model):
 
 
 
-    submission_answer = db.relationship("SubmissionAnswer", back_populates="submission", cascade="all,delete-orphan", lazy="selectin")
+    submission_answer = db.relationship("SubmissionAnswer", back_populates="submission", cascade="all,delete-orphan", lazy="selectin", uselist=False)
 
 
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)

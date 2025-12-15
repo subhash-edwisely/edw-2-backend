@@ -16,6 +16,8 @@ class SubmissionAnswer(db.Model):
     totalExecMemory = db.Column(db.Float, nullable=False)
     status = db.Column(db.String(255), nullable=False)
     mode = db.Column(db.Enum(ModeEnum), nullable=False, default=ModeEnum.Submit)
+    testcases_executed = db.Column(db.Integer)
+    total_testcases = db.Column(db.Integer)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 

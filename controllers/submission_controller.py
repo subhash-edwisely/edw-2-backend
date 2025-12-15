@@ -1,26 +1,35 @@
 from services.submission_service import (
-    fetch_submissions_of_user_for_problem, 
-    fetch_submissions_of_user,
+    fetch_submission_by_id,
     create_new_submission
 )
 
 from utils.response import success, error
 
-def get_submissions_of_user_for_problem(user_id: int, problem_id: int):
-    try: 
-        submissions = fetch_submissions_of_user_for_problem(user_id, problem_id)
-        return success(data=submissions)
+# def get_submissions_of_user_for_problem(user_id: int, problem_id: int):
+#     try: 
+#         submissions = fetch_submissions_of_user_for_problem(user_id, problem_id)
+#         return success(data=submissions)
     
-    except Exception as e:
-        return error(str(e))
+#     except Exception as e:
+#         return error(str(e))
     
 
 
 
-def get_submissions_of_user(user_id: int):
+# def get_submissions_of_user(user_id: int):
+#     try:
+#         submissions = fetch_submissions_of_user(user_id)
+#         return success(data=submissions)
+    
+#     except Exception as e:
+#         return error(str(e))
+
+
+
+def get_submission_by_id(submission_id: int):
     try:
-        submissions = fetch_submissions_of_user(user_id)
-        return success(data=submissions)
+        submission = fetch_submission_by_id(submission_id)
+        return success(data=submission)
     
     except Exception as e:
         return error(str(e))
