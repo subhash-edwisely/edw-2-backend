@@ -13,3 +13,5 @@ from .submission import Submission
 from .user import User
 from .submissions_answer import SubmissionAnswer
 from .testcase_result import TestcaseResult
+from .aihints import AIHint
+from .xp_transaction import XPTransaction, Feature, Source
