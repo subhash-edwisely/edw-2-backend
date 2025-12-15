@@ -14,6 +14,7 @@ GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 @ai_bp.route("/chat", methods=["POST"])
 def chat():
     data = request.json
+    current_app.logger.info(f"Received chat request: {data}")
     problem_id = str(data.get("problemId"))
     message = data.get("message")
     code = data.get("code", "")
@@ -38,6 +39,7 @@ def chat():
         response = requests.post(GEMINI_API_URL, json=payload, headers=headers)
         response.raise_for_status()
         ai_message = response.json().get("reply", "No response from AI.")
+        current_app.logger.info(f"AI reply: {ai_message}")
 
         # Save messages in chat history
         history.append({"role": "user", "content": message})
