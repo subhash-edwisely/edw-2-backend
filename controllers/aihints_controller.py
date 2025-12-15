@@ -14,7 +14,7 @@ def generate_uuid():
 
 
 # GET /api/aihints/<problem_id>
-@aihints_bp.route("/<int:problem_id>", methods=["GET"])
+
 def get_hints(problem_id):
     user_id = request.args.get("userId")
 
@@ -52,7 +52,7 @@ def get_hints(problem_id):
 
 
 # POST /api/aihints/unlock
-@aihints_bp.route("/unlock", methods=["POST"])
+
 def unlock_hint():
     data = request.json
     user_id = data.get("userId")
