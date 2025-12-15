@@ -150,7 +150,7 @@ def fetch_problem_by_id(problem_id: int, user_id):
                     "created_at": tc.created_at
                 }
                 
-                for tc in problem.testcases
+                for tc in problem.testcases if not tc.isHidden
             ],
             "submissions": [{
                 "id": sub.id,
@@ -164,6 +164,22 @@ def fetch_problem_by_id(problem_id: int, user_id):
             } for sub in submissions ]
         }
 
+
+def fetch_all_testcases(problem_id: int):
+    testcases = Testcase.query.filter_by(problem_id=problem_id)
+    return [
+            {
+                "id": tc.id,
+                "input": tc.input_data,
+                "expected_output": tc.expected_output,
+                "explanation": tc.explanation,
+                "isHidden": tc.isHidden,
+                "order": tc.order,
+                "created_at": tc.created_at
+            }
+            
+            for tc in testcases
+        ],
 
 
 

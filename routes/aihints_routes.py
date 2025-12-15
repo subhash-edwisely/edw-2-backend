@@ -18,7 +18,6 @@ def get_hints(problem_id):
             "success": False,
             "message": str(e)
         }), 400
-  
 @aihints_bp.route("/unlock", methods=["POST"])
 def unlock_hint():
     data = request.get_json()
@@ -42,5 +41,3 @@ def unlock_hint():
             "success": False,
             "message": str(e)
         }), 500
-      
-        

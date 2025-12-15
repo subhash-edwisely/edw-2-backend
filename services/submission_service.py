@@ -12,6 +12,8 @@ from models.solved_problem import SolvedProblem
 from models.problem import Problem
 from models.submissions_answer import ModeEnum
 from models.user import User
+import time
+import math
 
 JUDGE0_URL = "http://16.171.168.56:2358" 
 POLL_TIMEOUT = 300  # 5 minutes max polling time
@@ -96,7 +98,10 @@ def create_new_submission(data):
     }
     
     Only stores data in DB after Judge0 completes execution.
+    Stops execution early if any test case fails in Submit mode.
     """
+
+    print("dataaaaa:", data)
 
     # --- 1) Validate / extract ---
     user_id = data.get("user_id")
@@ -105,26 +110,18 @@ def create_new_submission(data):
     language_name = data.get("language_name")
     mode = data.get("mode", "Submit")
 
-    if not all([user_id, problem_id, source_code, language_name]):
-        raise Exception("Missing required fields (user_id, problem_id, source_code, language_name)")
+    print('modeeeee:', mode)
 
-    # Validate language
-    language_obj = Language.query.filter_by(name=language_name).first()
-    if not language_obj:
-        raise Exception(f"Invalid language name: {language_name}")
-    judge0_lang_id = language_obj.compiler_language_id
+    lang_obj = Language.query.filter_by(name=language_name.lower()).first()
+    judge0_lang_id = lang_obj.compiler_language_id
+    print(judge0_lang_id)
 
-    # Validate problem and get testcases
-    problem = Problem.query.get(problem_id)
-    if not problem:
-        raise Exception(f"Problem not found: {problem_id}")
-    
-    testcases = Testcase.query.filter_by(problem_id=problem_id).order_by(Testcase.order).all()
-    if not testcases:
-        raise Exception(f"No testcases found for problem: {problem_id}")
+    if(mode.lower() == "run"):
+        testcases = Testcase.query.filter_by(problem_id=problem_id, isHidden=False)
+    else:
+        testcases = Testcase.query.filter_by(problem_id=problem_id)
 
-    # --- 2) Prepare Judge0 batch payload ---
-    submissions_payload = [
+    submissions_data = [
         {
             "source_code": source_code,
             "language_id": judge0_lang_id,
@@ -134,72 +131,73 @@ def create_new_submission(data):
         for tc in testcases
     ]
 
-    # --- 3) Send batch to Judge0 ---
-    try:
-        resp = requests.post(
-            f"{JUDGE0_URL}/submissions/batch?base64_encoded=false",
-            json={"submissions": submissions_payload},
-            timeout=30
+    submission_results = []
+    batch_size = 50
+    early_exit = False  # Flag to stop processing remaining batches
+    failed_status = None  # Store the failed status
+
+    for i in range(math.ceil(len(submissions_data)/batch_size)):
+        
+        if early_exit and mode.lower() == "submit":
+            # Skip remaining batches if we already found a failure
+            break
+
+        batch_post_res = requests.post(
+            url=f"{JUDGE0_URL}/submissions/batch?base64_encoded=false&wait=false",
+            json={"submissions": submissions_data[50*i: 50*(i+1)]}
         )
-        resp.raise_for_status()
-        batch = resp.json()
-        
-        if not batch or not isinstance(batch, list):
-            raise Exception("Invalid response from Judge0")
-        
-        tokens = [s['token'] for s in batch]
-        
-        if not tokens:
-            raise Exception("No tokens received from Judge0")
-            
-    except requests.exceptions.RequestException as e:
-        raise Exception(f"Failed to submit to Judge0: {str(e)}")
 
-    # --- 4) Poll until all finished with timeout ---
-    start_time = time.time()
-    results = None
-    
-    while True:
-        # Check timeout
-        if time.time() - start_time > POLL_TIMEOUT:
-            raise Exception("Submission timed out waiting for Judge0")
-        
-        try:
-            poll = requests.get(
-                f"{JUDGE0_URL}/submissions/batch",
-                params={"tokens": ",".join(tokens), "base64_encoded": "false"},
-                timeout=30
-            )
-            poll.raise_for_status()
-            results = poll.json()
-            
-            # Check if all finished (status.id not in [1=In Queue, 2=Processing])
-            if results and 'submissions' in results:
-                if all(r["status"]["id"] not in (1, 2) for r in results['submissions']):
-                    break
+        print(f"batch resssssss : {i} : ", batch_post_res.json())
+
+        submission_results_batch = []
+
+        for token_obj in batch_post_res.json():
+
+            token = token_obj['token']
+
+            while True:
+
+                get_res = requests.get(
+                    url=f"{JUDGE0_URL}/submissions/{token}?base64_encoded=false"
+                )
+
+                result = get_res.json()
+                
+                # Check if processing is complete (not queued or processing)
+                if(result['status']['id'] not in [1, 2]):
+                    submission_results_batch.append(result)
                     
-        except requests.exceptions.RequestException as e:
-            raise Exception(f"Failed to poll Judge0: {str(e)}")
+                    # CHECK FOR EARLY EXIT IN SUBMIT MODE
+                    if mode.lower() == "submit" and result["status"]['id'] != 3:
+                        early_exit = True
+                        failed_status = result["status"]["description"]
+                        print(f"Test case failed with status: {failed_status}. Stopping further execution.")
+                    
+                    break
+                
+                time.sleep(0.1)
+            
+            # Break out of token loop if we found a failure in Submit mode
+            if early_exit and mode.lower() == "submit":
+                break
+
+        submission_results.extend(submission_results_batch)
         
-        time.sleep(POLL_INTERVAL)
+        # Break out of batch loop if we found a failure in Submit mode
+        if early_exit and mode.lower() == "submit":
+            break
 
-    # --- 5) Validate results ---
-    if not results or 'submissions' not in results:
-        raise Exception("Invalid results from Judge0")
-    
-    if len(results['submissions']) != len(testcases):
-        raise Exception("Mismatch between testcases and results")
+    print(submission_results)
 
-    # --- 6) Aggregate totals and determine overall status ---
-    # Convert: time from seconds to milliseconds, memory from KB to MB
+    # --- Calculate metrics based on results we have ---
     total_time = 0.0
     total_memory = 0.0
     max_time = 0.0
     max_memory = 0.0
     overall_status = "AC"  # Accepted
-    testcase_count = len(results["submissions"])
+    testcase_count = len(submission_results)
     
-    for r in results["submissions"]:
+    for r in submission_results:
         # Add execution metrics (convert s->ms and KB->MB)
         time_in_seconds = float(r.get("time") or 0)
         memory_in_kb = float(r.get("memory") or 0)
@@ -215,12 +213,11 @@ def create_new_submission(data):
         # Check if not accepted (Judge0 status 3 = Accepted)
         if r["status"]["id"] != 3:
             overall_status = r["status"]["description"]
-            # Don't break - continue to calculate total time/memory
-    
+
     avg_time = total_time / testcase_count if testcase_count > 0 else 0
     avg_memory = total_memory / testcase_count if testcase_count > 0 else 0
 
-    # --- 7) NOW store everything in DB (only after completion) ---
+    # --- Store everything in DB (only after completion) ---
     try:
         # Create Submission record with final status
         submission = Submission(
@@ -230,26 +227,28 @@ def create_new_submission(data):
             total_exec_time=total_time,
             total_exec_memory=total_memory,
             language_name=language_name
-
         )
         db.session.add(submission)
         db.session.flush()  # Get submission.id without committing
 
         # Store SubmissionAnswer
-        mode_enum = ModeEnum.Submit if mode.lower() == "submit" else ModeEnum.Run
         submission_answer = SubmissionAnswer(
             submission_id=submission.id,
             code=source_code,
-            language_id=language_obj.id,
+            language_id=lang_obj.id,
             totalExecTime=total_time,
             totalExecMemory=total_memory,
             status=overall_status,
-            mode=mode_enum.value
+            mode=mode.capitalize()
         )
         db.session.add(submission_answer)
 
-        # Store TestcaseResults
-        for tc, res in zip(testcases, results["submissions"]):
+        # Store TestcaseResults (only for test cases that were executed)
+        executed_testcases = list(testcases)[:len(submission_results)]
+        for tc, res in zip(executed_testcases, submission_results):
+
+            print(res)
+
             time_in_seconds = float(res.get("time") or 0)
             memory_in_kb = float(res.get("memory") or 0)
             
@@ -260,12 +259,12 @@ def create_new_submission(data):
                 status=res["status"]["description"],
                 execTime=time_in_seconds * 1000,  # Convert to milliseconds
                 execMemory=memory_in_kb / 1024,   # Convert to MB
-                expected_output=tc.expected_output,
+                expected_output=res.get("stdout") or "No stdout",
                 error_message=(res.get("stderr") or res.get("compile_output") or "")
             )
             db.session.add(tc_result)
 
-        # --- 8) If accepted, handle SolvedProblem and XP ---
+        # --- If accepted, handle SolvedProblem and XP ---
         if overall_status == "AC":
             existing = SolvedProblem.query.filter_by(
                 user_id=user_id, 
@@ -273,7 +272,7 @@ def create_new_submission(data):
             ).first()
             
             if not existing:
-                xp_gain = getattr(problem, "xp", 0) or 0
+                xp_gain = Problem.query.get(problem_id).xp_reward
                 solved = SolvedProblem(
                     user_id=user_id,
                     problem_id=problem_id,
@@ -294,7 +293,7 @@ def create_new_submission(data):
         db.session.rollback()
         raise Exception(f"Failed to store submission data: {str(e)}")
 
-    # --- 9) Return structured response ---
+    # --- Return structured response ---
     return {
         "submission_id": submission.id,
         "submission_status": overall_status,
@@ -305,13 +304,15 @@ def create_new_submission(data):
         "avg_memory": avg_memory,  # in MB (per test case)
         "max_memory": max_memory,  # in MB (highest memory usage)
         "testcase_count": testcase_count,
+        "executed_testcase_count": len(submission_results),  # May be less than total if early exit
         "testcase_results": [
             {
                 "testcase_id": tc.id,
                 "status": res["status"]["description"],
                 "time": float(res.get("time") or 0) * 1000,  # milliseconds
-                "memory": float(res.get("memory") or 0) / 1024  # MB
+                "memory": float(res.get("memory") or 0) / 1024,  # MB
+                "output": res.get("stdout") or ""
             }
-            for tc, res in zip(testcases, results["submissions"])
+            for tc, res in zip(list(testcases)[:len(submission_results)], submission_results)
         ]
     }
