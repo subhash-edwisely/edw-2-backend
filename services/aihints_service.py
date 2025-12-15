@@ -76,7 +76,8 @@ class AIHintService:
             xp_spent=hint.cost,
             unlocked_at=datetime.utcnow()
         )
-
+        source = "aihints"
+        feature = "unlock_hint"
         xp_txn = XPTransaction(
             id=generate_uuid(),
             user_id=user.id,
