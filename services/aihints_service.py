@@ -62,13 +62,14 @@ class AIHintService:
                 "message": "Hint already unlocked",
                 "hintId": hint.id
             }
+
         if user.total_xp < hint.cost:
             raise ValueError("Not enough XP")
 
+        # Deduct XP
         user.total_xp -= hint.cost
 
-        
-
+        # Create unlocked hint
         user_hint = UserAIHint(
             id=generate_uuid(),
             user_id=user.id,
@@ -76,31 +77,90 @@ class AIHintService:
             xp_spent=hint.cost,
             unlocked_at=datetime.utcnow()
         )
-        source = "aihints"
-        feature = "unlock_hint"
+
+        # Create XP transaction
         xp_txn = XPTransaction(
             id=generate_uuid(),
             user_id=user.id,
             amount=hint.cost,
             transaction_type="spent",
-            source=source,
-            feature=feature,
+            source="aihints",
+            feature="unlock_hint",
             reference_id=hint.id,
             description=f"Unlocked AI hint L{hint.level} for problem {hint.problem_id}"
         )
 
-        db.session.add_all([user, user_hint, xp_txn])
+        db.session.add_all([user_hint, xp_txn])
+        db.session.commit()
 
         return {
             "message": "Hint unlocked successfully",
             "hint": {
-            "id": hint.id,
-            "level": hint.level,
-            "label": hint.label,
-            "content": hint.content,
-            "cost": hint.cost,
-            "locked": False
-             },
+                "id": hint.id,
+                "level": hint.level,
+                "label": hint.label,
+                "content": hint.content,
+                "cost": hint.cost,
+                "locked": False
+            },
             "remainingXP": user.total_xp
-
         }
+
+            user = User.query.get(user_id)
+            hint = AIHint.query.get(hint_id)
+
+            if not user or not hint:
+                raise ValueError("User or hint not found")
+
+            already_unlocked = UserAIHint.query.filter_by(
+                user_id=user.id,
+                hint_id=hint.id
+            ).first()
+
+            if already_unlocked:
+                return {
+                    "message": "Hint already unlocked",
+                    "hintId": hint.id
+                }
+            if user.total_xp < hint.cost:
+                raise ValueError("Not enough XP")
+
+            user.total_xp -= hint.cost
+
+            
+
+            user_hint = UserAIHint(
+                id=generate_uuid(),
+                user_id=user.id,
+                hint_id=hint.id,
+                xp_spent=hint.cost,
+                unlocked_at=datetime.utcnow()
+            )
+            source = "aihints"
+            feature = "unlock_hint"
+            xp_txn = XPTransaction(
+                id=generate_uuid(),
+                user_id=user.id,
+                amount=hint.cost,
+                transaction_type="spent",
+                source=source,
+                feature=feature,
+                reference_id=hint.id,
+                description=f"Unlocked AI hint L{hint.level} for problem {hint.problem_id}"
+            )
+
+            db.session.add_all([user, user_hint, xp_txn])
+
+            return {
+                "message": "Hint unlocked successfully",
+                "hint": {
+                "id": hint.id,
+                "level": hint.level,
+                "label": hint.label,
+                "content": hint.content,
+                "cost": hint.cost,
+                "locked": False
+                },
+                "remainingXP": user.total_xp
+
+            }
