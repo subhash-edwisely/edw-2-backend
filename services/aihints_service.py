@@ -62,12 +62,12 @@ class AIHintService:
                 "message": "Hint already unlocked",
                 "hintId": hint.id
             }
-
-        if user.totalXP < hint.cost:
+        if user.total_xp < hint.cost:
             raise ValueError("Not enough XP")
 
-        # Deduct XP
-        user.totalXP -= hint.cost
+        user.total_xp -= hint.cost
+
+        
 
         user_hint = UserAIHint(
             id=generate_uuid(),
@@ -99,5 +99,6 @@ class AIHintService:
             "cost": hint.cost,
             "locked": False
              },
-            "remainingXP": user.totalXP
+            "remainingXP": user.total_xp
+
         }
