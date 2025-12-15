@@ -1,56 +1,56 @@
-from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from services.chat_service import handle_user_message, get_chat_history_for_problem
+# backend/routes/ai_routes.py
+from flask import Blueprint, request, jsonify, current_app
+import os
+import requests
 
-ai_routes = Blueprint("ai_routes", __name__, url_prefix="/api/ai")
+ai_bp = Blueprint("ai", __name__, url_prefix="/api/ai")
 
-# POST /chat - send a message to AI
-@ai_routes.route("/chat", methods=["POST"])
-@jwt_required()
-def send_message():
-    user_id = get_jwt_identity()
-    data = request.get_json()
-    problem_id = data.get("problemId")
+# In-memory chat history store (for demo; replace with DB if needed)
+chat_history_store = {}
+
+GEMINI_API_URL = os.environ.get("GEMINI_API_URL", "https://api.gemini.example.com/v1/chat")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+
+@ai_bp.route("/chat", methods=["POST"])
+def chat():
+    data = request.json
+    problem_id = str(data.get("problemId"))
     message = data.get("message")
     code = data.get("code", "")
 
     if not problem_id or not message:
-        return jsonify({
-            "success": False,
-            "message": "Missing problemId or message"
-        }), 400
+        return jsonify({"error": "Missing problemId or message"}), 400
+
+    # Retrieve previous chat for context
+    history = chat_history_store.get(problem_id, [])
+
+    payload = {
+        "messages": history + [{"role": "user", "content": message}],
+        "context_code": code
+    }
+
+    headers = {
+        "Authorization": f"Bearer {GEMINI_API_KEY}",
+        "Content-Type": "application/json"
+    }
 
     try:
-        ai_response = handle_user_message(
-            user_id=user_id,
-            problem_id=problem_id,
-            message=message,
-            code=code
-        )
-        return jsonify({
-            "success": True,
-            "response": ai_response
-        }), 200
-    except Exception as e:
-        return jsonify({
-            "success": False,
-            "message": str(e)
-        }), 500
+        response = requests.post(GEMINI_API_URL, json=payload, headers=headers)
+        response.raise_for_status()
+        ai_message = response.json().get("reply", "No response from AI.")
 
-# GET /chat/history/<problem_id> - fetch chat history
-@ai_routes.route("/chat/history/<int:problem_id>", methods=["GET"])
-@jwt_required()
-def fetch_chat_history(problem_id):
-    user_id = get_jwt_identity()
+        # Save messages in chat history
+        history.append({"role": "user", "content": message})
+        history.append({"role": "ai", "content": ai_message})
+        chat_history_store[problem_id] = history
 
-    try:
-        history = get_chat_history_for_problem(user_id, problem_id)
-        return jsonify({
-            "success": True,
-            "data": history
-        }), 200
-    except Exception as e:
-        return jsonify({
-            "success": False,
-            "message": str(e)
-        }), 500
+        return jsonify({"message": ai_message, "history": history})
+
+    except requests.RequestException as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@ai_bp.route("/chat/history/<problem_id>", methods=["GET"])
+def chat_history(problem_id):
+    history = chat_history_store.get(str(problem_id), [])
+    return jsonify({"history": history})
