@@ -30,10 +30,6 @@ class UserAIHint(db.Model):
     hint_id = db.Column(db.String(36), db.ForeignKey("aihints.id", ondelete="CASCADE"), nullable=False)
     xp_spent = db.Column(db.Integer, nullable=False)
     unlocked_at = db.Column(db.DateTime, default=datetime.utcnow)
-    chat_message_id = db.Column(
-        db.String(36),
-        db.ForeignKey("chat_messages.id"),
-        nullable=True)
     user = db.relationship("User", backref=db.backref("user_aihints", lazy=True))
     hint = db.relationship("AIHint", backref=db.backref("user_aihints", lazy=True))
 
