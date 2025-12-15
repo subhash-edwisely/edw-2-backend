@@ -1,6 +1,6 @@
 from models.aihints import AIHint, UserAIHint
 from models.user import User
-from models.xp_transaction import XPTransaction
+from models.xp_transaction import XPTransaction, Feature, Source
 from db import db
 from datetime import datetime
 import uuid
@@ -22,6 +22,7 @@ class AIHintService:
         )
 
         unlocked_hint_ids = set()
+
         if user_id:
             unlocked_hint_ids = {
                 uh.hint_id
@@ -31,6 +32,7 @@ class AIHintService:
         result = []
         for hint in hints:
             is_unlocked = hint.id in unlocked_hint_ids
+
             result.append({
                 "id": hint.id,
                 "level": hint.level,
@@ -64,10 +66,14 @@ class AIHintService:
         if user.total_xp < hint.cost:
             raise ValueError("Not enough XP")
 
-        # Deduct XP
+        source = Source.query.filter_by(name="ai_help").first()
+        feature = Feature.query.filter_by(name="hint").first()
+
+        if not source or not feature:
+            raise ValueError("XP metadata not configured")
+
         user.total_xp -= hint.cost
 
-        # Create unlocked hint
         user_hint = UserAIHint(
             id=generate_uuid(),
             user_id=user.id,
@@ -76,9 +82,6 @@ class AIHintService:
             unlocked_at=datetime.utcnow()
         )
 
-        # Create XP transaction
-        source = "aihints"
-        feature = "unlock_hint"
         xp_txn = XPTransaction(
             id=generate_uuid(),
             user_id=user.id,
@@ -90,8 +93,7 @@ class AIHintService:
             description=f"Unlocked AI hint L{hint.level} for problem {hint.problem_id}"
         )
 
-        db.session.add_all([user_hint, xp_txn])
-        db.session.commit()
+        db.session.add_all([user, user_hint, xp_txn])
 
         return {
             "message": "Hint unlocked successfully",
