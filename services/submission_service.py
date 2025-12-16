@@ -149,6 +149,7 @@ def create_new_submission(data):
         testcases = Testcase.query.filter_by(problem_id=problem_id, isHidden=False).all()
     else:
         testcases = Testcase.query.filter_by(problem_id=problem_id).all()
+        
 
 
 
@@ -335,6 +336,19 @@ def create_new_submission(data):
                 user = User.query.get(user_id)
                 if user:
                     user.total_xp = (user.total_xp or 0) + xp_gain
+
+
+        if(mode.lower() == "submit"):
+            problem = Problem.query.get(problem_id)
+
+            if(problem):
+                problem.total_submissions += 1
+            
+                if(overall_status == "AC"):
+                    problem.accepted_submissions += 1
+            
+
+            problem.acceptance_rate = round((problem.accepted_submissions / problem.total_submissions) * 100, 2)
 
         # Commit all changes at once
         db.session.commit()

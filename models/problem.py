@@ -18,6 +18,9 @@ class Problem(db.Model):
     difficulty = db.Column(db.Enum(DifficultyEnum), nullable=False, default=DifficultyEnum.Easy)
     xp_reward = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    accepted_submissions = db.Column(db.Integer, default=0, nullable=False)
+    total_submissions = db.Column(db.Integer, default=0, nullable=False)
+    acceptance_rate = db.Column(db.Float, default=55.0, nullable=False)
 
 
     # one-to-one    

@@ -44,6 +44,7 @@ def fetch_all_problems(user_id):
             "difficulty": problem.difficulty.value if problem.difficulty else None,
             "xp_reward": problem.xp_reward,
             "created_at": problem.created_at,
+            "acceptance_rate": problem.acceptance_rate,
             "tags": [
                 {
                     "id": t.tag_id,
@@ -76,7 +77,6 @@ def fetch_problem_by_id(problem_id: int, user_id):
     # tags = Tag.query.join(ProblemTag).join(Problem).filter(Problem.id == problem_id).order_by(Tag.order).all()
     # testcases = Testcase.query.join(Problem).filter(Problem.id == problem_id).order_by(Testcase.order).all()
 
-
     problem = (
         Problem.query.options(
             joinedload(Problem.editorial),
@@ -106,6 +106,7 @@ def fetch_problem_by_id(problem_id: int, user_id):
             "difficulty": problem.difficulty.value if problem.difficulty else None,
             "xp_reward": problem.xp_reward,
             "created_at": problem.created_at,
+            "acceptance_rate": problem.acceptance_rate, 
             "editorial": {
                 "id": problem.editorial.id,
                 "problem_id": problem.editorial.problem_id,
