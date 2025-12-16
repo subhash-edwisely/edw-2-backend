@@ -308,11 +308,15 @@ def create_new_submission(data):
             db.session.add(tc_result)
 
         # --- If accepted, handle SolvedProblem and XP ---
+        print("status ", overall_status)
+
         if overall_status == "AC":
             existing = SolvedProblem.query.filter_by(
                 user_id=user_id, 
                 problem_id=problem_id
             ).first()
+
+            print("existing", existing)
             
             if not existing:
                 xp_gain = Problem.query.get(problem_id).xp_reward
@@ -325,6 +329,9 @@ def create_new_submission(data):
                 db.session.add(solved)
 
                 # Update user's total XP
+
+                print("XPPPPPPPPPPPPPPPPPP : ", xp_gain)
+
                 user = User.query.get(user_id)
                 if user:
                     user.total_xp = (user.total_xp or 0) + xp_gain
@@ -359,7 +366,8 @@ def create_new_submission(data):
                 "status": (res.get("status") or {}).get("description") or res.get("error") or "Unknown",
                 "time": float(res.get("time") or 0) * 1000,
                 "memory": float(res.get("memory") or 0) / 1024,
-                "output": res.get("stdout") or ""
+                "output": res.get("stdout") or "",
+                "stderr": res.get('stderr')
             }
             for tc, res in zip(list(testcases)[:len(submission_results)], submission_results)
         ]
