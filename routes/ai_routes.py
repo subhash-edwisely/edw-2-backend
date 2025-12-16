@@ -6,7 +6,10 @@ ai_bp = Blueprint("ai", __name__, url_prefix="/api/ai")
 
 chat_history_store = {}
 
-GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent"
+GEMINI_API_URL = (
+    "https://generativelanguage.googleapis.com/"
+    "v1beta/models/gemini-2.0-flash:generateContent"
+)
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
 
@@ -44,8 +47,11 @@ User code:
 
     try:
         response = requests.post(
-            f"{GEMINI_API_URL}?key={GEMINI_API_KEY}",
-            headers={"Content-Type": "application/json"},
+            GEMINI_API_URL,
+            headers={
+                "Content-Type": "application/json",
+                "X-goog-api-key": GEMINI_API_KEY,
+            },
             json=payload,
             timeout=30,
         )
@@ -61,10 +67,14 @@ User code:
         history.append({"role": "assistant", "content": ai_message})
         chat_history_store[problem_id] = history
 
-        return jsonify({"message": ai_message, "history": history})
+        return jsonify({
+            "message": ai_message,
+            "history": history
+        })
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 @ai_bp.route("/chat/history/<problem_id>", methods=["GET"])
 def chat_history(problem_id):
