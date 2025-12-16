@@ -8,7 +8,7 @@ from .root_routes import root_bp
 from .submission_routes import submission_bp
 from .aihints_routes import aihints_bp
 # <-- import your AI hints routes
-from .ai_routes import ai_bp
+from .ai import ai_bp
 
 def register_routes(app):
     app.register_blueprint(root_bp)

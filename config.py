@@ -1,13 +1,14 @@
+
+
+import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-import os
-
 class Config: 
 
     # print(os.environ.get("DATABASE_URL"))
-    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
     JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY")  # used to sign JWTs
     JWT_TOKEN_LOCATION = ["cookies"]                   # read JWT from cookies
     JWT_ACCESS_COOKIE_NAME = "access_token"           # cookie name
