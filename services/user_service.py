@@ -134,7 +134,8 @@ def login(data: dict):
             "email": user.email,
             "username": user.username,
             "role": user.role.value,
-            "college": user.college.name
+            "college": user.college.name,
+            "total_xp": user.total_xp or 0, 
         },
         "access_token": access_token  # Include token in response
     }

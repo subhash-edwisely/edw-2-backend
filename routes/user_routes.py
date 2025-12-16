@@ -4,7 +4,7 @@ from controllers.user_controller import (
     get_user,
     register_user,
     login_user,
-    # get_user_progress
+    get_user_progress
 )
 
 user_bp = Blueprint("user_routes", __name__)
@@ -27,7 +27,7 @@ def route_login_user():
     data = request.json
     return login_user(data)
 
-# # ⭐ NEW: GET USER PROGRESS
-# @user_bp.get("/<int:user_id>/progress")
-# def route_user_progress(user_id):
-#     return get_user_progress(user_id)
+# ⭐ NEW: GET USER PROGRESS
+@user_bp.get("/<int:user_id>/progress")
+def route_user_progress(user_id):
+    return get_user_progress(user_id)
