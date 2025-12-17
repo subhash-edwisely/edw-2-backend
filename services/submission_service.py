@@ -326,6 +326,7 @@ def create_new_submission(data):
 
             print("existing", existing)
             
+            xp_gain = 0
             if not existing:
                 xp_gain = Problem.query.get(problem_id).xp_reward
                 solved = SolvedProblem(
@@ -397,6 +398,7 @@ def create_new_submission(data):
                 "stderr": res.get('stderr')
             }
             for tc, res in zip(list(testcases)[:len(submission_results)], submission_results)
-        ]
+        ],
+        "xp_earned": xp_gain
 
     }

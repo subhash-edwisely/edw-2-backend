@@ -18,6 +18,40 @@ import random
 
 
 def fetch_all_problems(user_id):
+    solved_ids = {
+        s.problem_id
+        for s in SolvedProblem.query
+            .filter_by(user_id=user_id)
+            .with_entities(SolvedProblem.problem_id)
+            .all()
+    }
+
+    problems = Problem.query.options(
+        selectinload(Problem.tags).selectinload(ProblemTag.tag),
+    ).all()
+
+    return [
+        {
+            "id": problem.id,
+            "title": problem.title,
+            "description": problem.description,
+            "difficulty": problem.difficulty.value if problem.difficulty else None,
+            "xp_reward": problem.xp_reward,
+            "created_at": problem.created_at,
+            "acceptance_rate": problem.acceptance_rate,
+            "tags": [
+                {
+                    "id": t.tag_id,
+                    "name": t.tag.name if t.tag else None,
+                    "category": t.tag.category.value if t.tag and t.tag.category else None,
+                }
+                for t in problem.tags
+            ],
+            "solved_status": problem.id in solved_ids
+        }
+        for problem in problems
+    ]
+
     # problems = Problem.query.all()
     # return [
     #     {
