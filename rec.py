@@ -199,8 +199,8 @@ class PersonalizedRecommender:
             
             score = self._calculate_problem_score(problem)
             
-            # if not exclude_solved and problem_id in solved:
-            #     score *= 0.7
+            if not exclude_solved and problem_id in solved:
+                score *= 0.7
             
             candidates.append({**problem, 'recommendation_score': score})
         
