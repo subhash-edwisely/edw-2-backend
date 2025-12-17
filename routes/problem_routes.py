@@ -74,8 +74,12 @@ def route_create_problem():
 
 
 @problem_bp.get("/daily")
+@jwt_required()
 def route_get_daily_challenge():
-    return get_daily_challenge()
+    user_id = str(get_jwt_identity())  # ✅ get current user id
+    return get_daily_challenge(user_id)  # pass it to the controller
+
+
 
 # delete problem
 
