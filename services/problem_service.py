@@ -14,7 +14,7 @@ from db import db
 from data import get_data
 import time
 import random
-
+from rec import get_top_recommendations
 
 
 def fetch_all_problems(user_id):
@@ -43,11 +43,17 @@ def fetch_all_problems(user_id):
         selectinload(Problem.tags).selectinload(ProblemTag.tag),
     ).all()
 
+    submissions = Submission.query.filter_by(user_id=user_id).all()
+
+    rec_prob = get_top_recommendations(problems, submissions, user_id, n=1)
+
 
     print("ALL problems end : ", round((time.time() - solved_ids_end)*1e3))
 
 
     print("SOlved ids  :",[(id, type(id)) for id in solved_ids])
+
+    print("rec prob : ", rec_prob)
 
 
     for problem in problems:
@@ -75,7 +81,9 @@ def fetch_all_problems(user_id):
 
                 for t in problem.tags
             ],
-            "solved_status": int(problem.id) in solved_ids
+            "solved_status": int(problem.id) in solved_ids,
+            "daily_challenge_problem": rec_prob[0]['problem_id']
+
         } 
         
         for problem in problems
@@ -206,7 +214,9 @@ def fetch_problem_by_id(problem_id: int, user_id):
                 {
                     "id": tc.id,
                     "input": tc.input_data,
+                    "input_to_show": tc.input_to_show,
                     "expected_output": tc.expected_output,
+                    "expected_output_to_show": tc.expected_output_to_show,
                     "explanation": tc.explanation,
                     "isHidden": tc.isHidden,
                     "order": tc.order,
@@ -375,7 +385,7 @@ def create_new_problem(data):
         title=data.get('title'),
         description=data.get('description'),
         difficulty=data.get('difficulty'),
-        xp_reward=data.get('xp_reward', 0),
+        xp_reward=data.get('xpReward', 0),
     )
 
     db.session.add(problem)
@@ -467,7 +477,9 @@ def create_new_problem(data):
     for tc in testcases_data:
 
         testcase = Testcase(
+            input_to_show=tc.get('input_to_show'),
             input_data=tc.get('input'),
+            expected_output_to_show=tc.get("expectedOutput_to_show"),
             expected_output=tc.get("expectedOutput"),
             explanation=tc.get("explanation"),
             isHidden=tc.get('isHidden'),

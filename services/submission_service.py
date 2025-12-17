@@ -318,7 +318,7 @@ def create_new_submission(data):
         # --- If accepted, handle SolvedProblem and XP ---
         print("status ", overall_status)
 
-        if overall_status == "AC":
+        if overall_status == "AC" and mode.lower() == "submit":
             existing = SolvedProblem.query.filter_by(
                 user_id=user_id, 
                 problem_id=problem_id
@@ -341,6 +341,11 @@ def create_new_submission(data):
                 print("XPPPPPPPPPPPPPPPPPP : ", xp_gain)
 
 
+                user = User.query.get(user_id)
+                if user:
+                    user.total_xp = user.total_xp + xp_gain
+
+
         if(mode.lower() == "submit"):
             problem = Problem.query.get(problem_id)
 
@@ -349,10 +354,6 @@ def create_new_submission(data):
             
                 if(overall_status == "AC"):
                     problem.accepted_submissions += 1
-
-            user = User.query.get(user_id)
-            if user:
-                user.total_xp = (user.total_xp or 0) + xp_gain
             
 
             problem.acceptance_rate = round((problem.accepted_submissions / problem.total_submissions) * 100, 2)

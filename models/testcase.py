@@ -6,7 +6,9 @@ class Testcase(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     input_data = db.Column(db.Text, nullable=False)
+    input_to_show =  db.Column(db.Text, nullable=False)
     expected_output = db.Column(db.Text, nullable=False)
+    expected_output_to_show = db.Column(db.Text, nullable=False)
     explanation = db.Column(db.Text, nullable=True)
     isHidden = db.Column(db.Boolean, default=False)
     order = db.Column(db.Integer, default=0)

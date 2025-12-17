@@ -1,273 +1,396 @@
 problem_1 = {
-        "title": "Two Sum",
-        "description": "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.\n\nYou may assume that each input would have exactly one solution, and you may not use the same element twice.\n\nYou can return the answer in any order.",
-        "xpReward": 10,
-        "difficulty": "Easy",
-        "hints": [
-            {
-                "content": "Try using a hash map to store the numbers you've seen so far.",
-                "order": 1
-            },
-            {
-                "content": "For each number, check if target - current number exists in your hash map.",
-                "order": 2
-            },
-            {
-                "content": "The time complexity can be reduced to O(n) with this approach.",
-                "order": 3
-            }
-        ],
+    "title": "Container With Most Water",
+    "description": "You are given an integer array height of length n. There are n vertical lines drawn such that the two endpoints of the ith line are (i, 0) and (i, height[i]).\n\nFind two lines that together with the x-axis form a container, such that the container contains the most water.\n\nReturn the maximum amount of water a container can store.\n\nNote: You may not slant the container.",
+    "xpReward": 15,
+    "difficulty": "Medium",
+    "hints": [
+        {
+            "content": "Use two pointers starting from both ends of the array.",
+            "order": 1
+        },
+        {
+            "content": "The area is determined by the shorter line and the distance between the two lines.",
+            "order": 2
+        },
+        {
+            "content": "Move the pointer pointing to the shorter line inward, as moving the taller one won't increase the area.",
+            "order": 3
+        },
+        {
+            "content": "Keep track of the maximum area found so far.",
+            "order": 4
+        }
+    ],
+    "constraints": [
+        {
+            "description": "n == height.length",
+            "order": 1
+        },
+        {
+            "description": "2 <= n <= 10^5",
+            "order": 2
+        },
+        {
+            "description": "0 <= height[i] <= 10^4",
+            "order": 3
+        }
+    ],
+    "editorial": {
+        "title": "Container With Most Water",
+        "overview": """
+The **Container With Most Water** problem is a classic two-pointer problem that tests your understanding of greedy algorithms and optimization.
 
-        "constraints": [
-            {
-                "description": "2 <= nums.length <= 10^4",
-                "order": 1
-            },
-            {
-                "description": "-10^9 <= nums[i] <= 10^9",
-                "order": 2
-            },
-            {
-                "description": "-10^9 <= target <= 10^9",
-                "order": 3
-            },
-            {
-                "description": "Only one valid answer exists",
-                "order": 4
-            }
-        ],
-        
-        "editorial": {
-                "title": "Two sum",
+### Problem Essence:
+Given an array of heights representing vertical lines, find two lines that form a container with the maximum water capacity. The water capacity is determined by the shorter of the two lines multiplied by the distance between them.
 
-                    "overview": """
-The **Two Sum** problem asks us to find two indices such that their values add up to a given target.
+### Key Insight:
+The area formed between two lines is: `min(height[left], height[right]) * (right - left)`
 
-A few common approaches are:
-- Brute Force using nested loops
-- Hash Map for an optimal O(n) solution
+We want to maximize this area. Starting with the widest possible container (leftmost and rightmost lines), we can improve by moving the pointer at the shorter line inward, since moving the taller line can only decrease the area.
 
-Below are detailed explanations of both approaches.
-                """,
+### Examples:
+Input: [1,8,6,2,5,4,8,3,7]
+- Lines at index 1 (height=8) and index 8 (height=7)
+- Area = min(8,7) * (8-1) = 7 * 7 = 49
 
-                    "approaches": [
-                        {
-                            "id": "brute_force",
-                            "title": "Approach 1: Brute Force",
-                            "explanation": """
-The simplest idea is to check every possible pair of numbers.
+Input: [1,1]
+- Only two lines, both height 1
+- Area = min(1,1) * (1-0) = 1
+
+### Approaches:
+- Brute force checking all pairs (O(n²))
+- Two pointer approach (O(n) - optimal)
+        """,
+        "approaches": [
+            {
+                "id": "brute_force",
+                "title": "Approach 1: Brute Force",
+                "explanation": """
+The straightforward approach is to check every possible pair of lines and calculate the area.
 
 ### Algorithm
-1. Loop through each index `i`
-2. For each `i`, loop through each index `j > i`
-3. If `nums[i] + nums[j] == target`, return `[i, j]`
+1. Initialize maxArea = 0
+2. Use two nested loops:
+   - Outer loop: iterate through each line i
+   - Inner loop: iterate through each line j > i
+   - Calculate area = min(height[i], height[j]) * (j - i)
+   - Update maxArea if this area is greater
+3. Return maxArea
 
 ### Why it works
-We explore all combinations, so if a solution exists, we will find it.
+By checking every possible combination, we're guaranteed to find the maximum area.
+
+### Example: [1,8,6,2,5,4,8,3,7]
+- Check all pairs: (0,1), (0,2), ..., (0,8), (1,2), ..., (7,8)
+- For each pair, calculate: min(height[i], height[j]) * distance
+- Track maximum: 49 (between indices 1 and 8)
 
 ### Complexity
-- Time: O(n²)
-- Space: O(1)
-                """,
-                            "code": {
-                                "python": """
+- Time: O(n²) - nested loops checking all pairs
+- Space: O(1) - only storing variables
+
+### Note
+This approach works but is inefficient for large inputs. It will likely exceed time limits on larger test cases.
+            """,
+                "code": {
+                    "python": """
 class Solution:
-    def twoSum(self, nums, target):
-        for i in range(len(nums)):
-            for j in range(i + 1, len(nums)):
-                if nums[i] + nums[j] == target:
-                    return [i, j]
-                """,
-                                "java": """
+    def maxArea(self, height):
+        max_area = 0
+        n = len(height)
+        
+        for i in range(n):
+            for j in range(i + 1, n):
+                # Calculate area between lines i and j
+                width = j - i
+                h = min(height[i], height[j])
+                area = width * h
+                max_area = max(max_area, area)
+        
+        return max_area
+            """,
+                    "java": """
 class Solution {
-    public int[] twoSum(int[] nums, int target) {
-        for (int i = 0; i < nums.length; i++) {
-            for (int j = i + 1; j < nums.length; j++) {
-                if (nums[i] + nums[j] == target) {
-                    return new int[]{i, j};
-                }
+    public int maxArea(int[] height) {
+        int maxArea = 0;
+        int n = height.length;
+        
+        for (int i = 0; i < n; i++) {
+            for (int j = i + 1; j < n; j++) {
+                // Calculate area between lines i and j
+                int width = j - i;
+                int h = Math.min(height[i], height[j]);
+                int area = width * h;
+                maxArea = Math.max(maxArea, area);
             }
         }
-        return new int[]{};
+        
+        return maxArea;
     }
-                }
-                """,
-                                "cpp": """
+}
+            """,
+                    "cpp": """
 class Solution {
 public:
-    vector<int> twoSum(vector<int>& nums, int target) {
-        for (int i = 0; i < nums.size(); i++) {
-            for (int j = i + 1; j < nums.size(); j++) {
-                if (nums[i] + nums[j] == target) {
-                    return {i, j};
-                }
+    int maxArea(vector<int>& height) {
+        int maxArea = 0;
+        int n = height.size();
+        
+        for (int i = 0; i < n; i++) {
+            for (int j = i + 1; j < n; j++) {
+                // Calculate area between lines i and j
+                int width = j - i;
+                int h = min(height[i], height[j]);
+                int area = width * h;
+                maxArea = max(maxArea, area);
             }
         }
-        return {};
-    }
-                };
-                """
-                            }
-                        },
-
-                        {
-                            "id": "optimal_hashmap",
-                            "title": "Approach 2: Hash Map (Optimal O(n))",
-                            "explanation": """
-We can solve the problem in **one pass** using a hash map.
-
-### Key Idea
-While iterating over the array:
-- Compute the complement: `target - nums[i]`
-- If the complement is already in the map → we found the answer
-- Otherwise, store the current number in the map
-
-### Algorithm
-1. Create an empty hash map
-2. Loop through each index `i`
-3. Let `num = nums[i]`
-4. Compute `complement = target - num`
-5. If complement is in the map, return `[map[complement], i]`
-6. Otherwise, store `map[num] = i`
-
-### Complexity
-- Time: O(n)
-- Space: O(n)
-                """,
-                            "code": {
-                                "python": """
-class Solution:
-    def twoSum(self, nums, target):
-        seen = {}
-        for i, value in enumerate(nums):
-            complement = target - value
-            if complement in seen:
-                return [seen[complement], i]
-            seen[value] = i
-                """,
-                                "java": """
-class Solution {
-    public int[] twoSum(int[] nums, int target) {
-        Map<Integer, Integer> seen = new HashMap<>();
-
-        for (int i = 0; i < nums.length; i++) {
-            int complement = target - nums[i];
-
-            if (seen.containsKey(complement)) {
-                return new int[]{seen.get(complement), i};
-            }
-
-            seen.put(nums[i], i);
-        }
-
-        return new int[]{};
-    }
-                }
-                """,
-                                "cpp": """
-class Solution {
-public:
-    vector<int> twoSum(vector<int>& nums, int target) {
-        unordered_map<int, int> seen;
-
-        for (int i = 0; i < nums.size(); i++) {
-            int complement = target - nums[i];
-
-            if (seen.count(complement)) {
-                return {seen[complement], i};
-            }
-
-            seen[nums[i]] = i;
-        }
-
-        return {};
+        
+        return maxArea;
     }
 };
-                """
-                            }
-                        }
-                    ],
+            """
+                }
+            },
+            {
+                "id": "two_pointers",
+                "title": "Approach 2: Two Pointers (Optimal)",
+                "explanation": """
+We can solve this problem optimally using a two-pointer approach that starts from both ends and moves inward.
 
-                    "videoUrl": "https://www.youtube.com/watch?v=KLlXCFG5TnA"
-        },
+### Key Idea
+Start with the widest possible container (leftmost and rightmost lines). The area is limited by the shorter line. To potentially find a larger area:
+- We must move inward (reducing width)
+- We should move the pointer at the shorter line (the bottleneck)
+- Moving the taller line pointer would only decrease the area since width decreases and height can't increase beyond the shorter line
 
-        "testcases": [
-            {
-                "input": "[2,7,11,15]\n9",
-                "expectedOutput": "[0,1]",
-                "isHidden": False,
-                "order": 1,
-                "explanation": ""
-            },
-            {
-                "input": "[3,2,4]\n6",
-                "expectedOutput": "[1,2]",
-                "isHidden": False,
-                "order": 2,
-                "explanation": ""
-            },
-            {
-                "input": "[3,3]\n6",
-                "expectedOutput": "[0,1]",
-                "isHidden": False,
-                "order": 3,
-                "explanation": ""
-            },
-            {
-                "input": "[1,5,3,7,8,9]\n12",
-                "expectedOutput": "[2,4]",
-                "isHidden": True,
-                "order": 4,
-                "explanation": ""
-            },
-            {
-                "input": "[-1,-2,-3,-4,-5]\n-8",
-                "expectedOutput": "[2,4]",
-                "isHidden": True,
-                "order": 5,
-                "explanation": ""
+### Algorithm
+1. Initialize left = 0, right = n-1
+2. Initialize maxArea = 0
+3. While left < right:
+   - Calculate current area = min(height[left], height[right]) * (right - left)
+   - Update maxArea if current area is larger
+   - If height[left] < height[right], move left pointer right (left++)
+   - Otherwise, move right pointer left (right--)
+4. Return maxArea
+
+### Why it works
+By always moving the pointer at the shorter line, we eliminate all containers that would use that shorter line at that position (since they can only have smaller areas). We systematically explore containers that might have larger areas.
+
+### Example Walkthrough: [1,8,6,2,5,4,8,3,7]
+```
+left=0, right=8: area = min(1,7) * 8 = 8, move left (1 < 7)
+left=1, right=8: area = min(8,7) * 7 = 49, move right (8 > 7)
+left=1, right=7: area = min(8,3) * 6 = 18, move right (8 > 3)
+left=1, right=6: area = min(8,8) * 5 = 40, move either (equal)
+left=1, right=5: area = min(8,4) * 4 = 16, move right (8 > 4)
+left=1, right=4: area = min(8,5) * 3 = 15, move right (8 > 5)
+left=1, right=3: area = min(8,2) * 2 = 4, move right (8 > 2)
+left=1, right=2: area = min(8,6) * 1 = 6, move right (8 > 6)
+left=1, right=1: stop
+
+Maximum area: 49
+```
+
+### Visual Representation:
+```
+Height: [1, 8, 6, 2, 5, 4, 8, 3, 7]
+Index:   0  1  2  3  4  5  6  7  8
+         L                       R  → area = 8
+            L                    R  → area = 49 ← maximum!
+            L                 R     → area = 18
+            L              R        → area = 40
+```
+
+### Complexity
+- Time: O(n) - single pass with two pointers
+- Space: O(1) - only using two pointers and variables
+            """,
+                "code": {
+                    "python": """
+class Solution:
+    def maxArea(self, height):
+        left = 0
+        right = len(height) - 1
+        max_area = 0
+        
+        while left < right:
+            # Calculate current area
+            width = right - left
+            h = min(height[left], height[right])
+            current_area = width * h
+            max_area = max(max_area, current_area)
+            
+            # Move the pointer at the shorter line
+            if height[left] < height[right]:
+                left += 1
+            else:
+                right -= 1
+        
+        return max_area
+            """,
+                    "java": """
+class Solution {
+    public int maxArea(int[] height) {
+        int left = 0;
+        int right = height.length - 1;
+        int maxArea = 0;
+        
+        while (left < right) {
+            // Calculate current area
+            int width = right - left;
+            int h = Math.min(height[left], height[right]);
+            int currentArea = width * h;
+            maxArea = Math.max(maxArea, currentArea);
+            
+            // Move the pointer at the shorter line
+            if (height[left] < height[right]) {
+                left++;
+            } else {
+                right--;
             }
-        ],
-
-        "tags": [
-            {
-                "name": "Array",
-                "category": "topic"
-            },
-            {
-                "name": "Hash Table",
-                "category": "topic"
-            },
-            {
-                "name": "Google",
-                "category": "company"
-            },
-            {
-                "name": "Amazon",
-                "category": "company"
-            }
-        ],
-
-        "snippets": [
-            {
-                "code": "class Solution:\n    def twoSum(self, nums, target):\n        pass",
-                "lang": "python",
-                "compiler_language_id": 71
-            },
-            {
-                "code": "class Solution {\n    public int[] twoSum(int[] nums, int target) {\n        return new int[]{};\n    }\n}",
-                "lang": "java",
-                "compiler_language_id": 62
-            },
-            {
-                "code": "class Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        return {};\n    }\n};",
-                "lang": "cpp",
-                "compiler_language_id": 54
-            }
-        ]
+        }
+        
+        return maxArea;
     }
-
-
+}
+            """,
+                    "cpp": """
+class Solution {
+public:
+    int maxArea(vector<int>& height) {
+        int left = 0;
+        int right = height.size() - 1;
+        int maxArea = 0;
+        
+        while (left < right) {
+            // Calculate current area
+            int width = right - left;
+            int h = min(height[left], height[right]);
+            int currentArea = width * h;
+            maxArea = max(maxArea, currentArea);
+            
+            // Move the pointer at the shorter line
+            if (height[left] < height[right]) {
+                left++;
+            } else {
+                right--;
+            }
+        }
+        
+        return maxArea;
+    }
+};
+            """
+                }
+            }
+        ],
+        "videoUrl": "https://www.youtube.com/watch?v=UuiTKBwPgAo"
+    },
+    "testcases": [
+        {
+            "input_to_show": "[1, 8, 6, 2, 5, 4, 8, 3, 7]",
+            "input": "1 8 6 2 5 4 8 3 7",
+            "expectedOutput_to_show": "49",
+            "expectedOutput": "49",
+            "isHidden": False,
+            "order": 1,
+            "explanation": ""
+        },
+        {
+            "input_to_show": "[1, 1]",
+            "input": "1 1",
+            "expectedOutput_to_show": "1",
+            "expectedOutput": "1",
+            "isHidden": False,
+            "order": 2,
+            "explanation": ""
+        },
+        {
+            "input_to_show": "[4, 3, 2, 1, 4]",
+            "input": "4 3 2 1 4",
+            "expectedOutput_to_show": "16",
+            "expectedOutput": "16",
+            "isHidden": False,
+            "order": 3,
+            "explanation": ""
+        },
+        {
+            "input_to_show": "[1, 2, 1]",
+            "input": "1 2 1",
+            "expectedOutput_to_show": "2",
+            "expectedOutput": "2",
+            "isHidden": True,
+            "order": 4,
+            "explanation": ""
+        },
+        {
+            "input_to_show": "[2, 3, 4, 5, 18, 17, 6]",
+            "input": "2 3 4 5 18 17 6",
+            "expectedOutput_to_show": "17",
+            "expectedOutput": "17",
+            "isHidden": True,
+            "order": 5,
+            "explanation": ""
+        },
+        {
+            "input_to_show": "[1, 3, 2, 5, 25, 24, 5]",
+            "input": "1 3 2 5 25 24 5",
+            "expectedOutput_to_show": "24",
+            "expectedOutput": "24",
+            "isHidden": True,
+            "order": 6,
+            "explanation": ""
+        }
+    ],
+    "tags": [
+        {
+            "name": "Array",
+            "category": "topic"
+        },
+        {
+            "name": "Two Pointers",
+            "category": "topic"
+        },
+        {
+            "name": "Greedy",
+            "category": "topic"
+        },
+        {
+            "name": "Amazon",
+            "category": "company"
+        },
+        {
+            "name": "Facebook",
+            "category": "company"
+        },
+        {
+            "name": "Google",
+            "category": "company"
+        },
+        {
+            "name": "Microsoft",
+            "category": "company"
+        }
+    ],
+    "snippets": [
+        {
+            "code": "class Solution:\n    def maxArea(self, height):\n        pass\n\nif __name__ == '__main__':\n    height = list(map(int, input().split()))\n    sol = Solution()\n    result = sol.maxArea(height)\n    print(result)",
+            "lang": "python",
+            "compiler_language_id": 71
+        },
+        {
+            "code": "import java.util.*;\n\nclass Solution {\n    public int maxArea(int[] height) {\n        return 0;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        String[] parts = sc.nextLine().split(\" \");\n        int[] height = new int[parts.length];\n        for (int i = 0; i < parts.length; i++) {\n            height[i] = Integer.parseInt(parts[i]);\n        }\n        Solution sol = new Solution();\n        int result = sol.maxArea(height);\n        System.out.println(result);\n        sc.close();\n    }\n}",
+            "lang": "java",
+            "compiler_language_id": 62
+        },
+        {
+            "code": "#include <iostream>\n#include <vector>\n#include <sstream>\nusing namespace std;\n\nclass Solution {\npublic:\n    int maxArea(vector<int>& height) {\n        return 0;\n    }\n};\n\nint main() {\n    string line;\n    getline(cin, line);\n    istringstream iss(line);\n    vector<int> height;\n    int h;\n    while (iss >> h) {\n        height.push_back(h);\n    }\n    Solution sol;\n    int result = sol.maxArea(height);\n    cout << result << endl;\n    return 0;\n}",
+            "lang": "cpp",
+            "compiler_language_id": 54
+        }
+    ]
+}
 
 
 
@@ -279,128 +402,161 @@ public:
 
 
 problem_2 = {
-    "title": "Reverse Linked List",
-    "description": "Given the head of a singly linked list, reverse the list, and return the reversed list.\n\nA singly linked list is a data structure where each node contains a value and a pointer to the next node in the sequence.",
-    "xpReward": 15,
+    "title": "Binary Search",
+    "description": "Given an array of integers nums which is sorted in ascending order, and an integer target, write a function to search target in nums. If target exists, then return its index. Otherwise, return -1.\n\nYou must write an algorithm with O(log n) runtime complexity.",
+    "xpReward": 10,
     "difficulty": "Easy",
     "hints": [
         {
-            "content": "Think about using three pointers: previous, current, and next.",
+            "content": "Use the divide and conquer approach by comparing the middle element with the target.",
             "order": 1
         },
         {
-            "content": "You need to change the direction of the 'next' pointers as you traverse the list.",
+            "content": "If the target is less than the middle element, search the left half. Otherwise, search the right half.",
             "order": 2
         },
         {
-            "content": "Don't forget to handle the edge case of an empty list or a single node.",
+            "content": "Keep track of left and right pointers and update them based on comparisons.",
             "order": 3
         },
         {
-            "content": "Consider solving this both iteratively and recursively for practice.",
+            "content": "The loop should continue while left <= right.",
             "order": 4
         }
     ],
     "constraints": [
         {
-            "description": "The number of nodes in the list is in the range [0, 5000]",
+            "description": "1 <= nums.length <= 10^4",
             "order": 1
         },
         {
-            "description": "-5000 <= Node.val <= 5000",
+            "description": "-10^4 < nums[i], target < 10^4",
             "order": 2
+        },
+        {
+            "description": "All the integers in nums are unique",
+            "order": 3
+        },
+        {
+            "description": "nums is sorted in ascending order",
+            "order": 4
         }
     ],
     "editorial": {
-        "title": "Reverse Linked List",
+        "title": "Binary Search",
         "overview": """
-The **Reverse Linked List** problem is a fundamental linked list manipulation problem that tests your understanding of pointer operations.
+**Binary Search** is one of the most fundamental algorithms in computer science. It efficiently searches for a target value in a sorted array by repeatedly dividing the search interval in half.
 
-The goal is to reverse the direction of all the 'next' pointers in a singly linked list, making the last node become the first and vice versa.
+### Problem Essence:
+Given a sorted array, find the index of a target element in O(log n) time.
 
-### Key Approaches:
-- Iterative approach using three pointers
-- Recursive approach using the call stack
-- Both solutions achieve O(n) time complexity
+### Key Insight:
+Since the array is sorted, we can eliminate half of the remaining elements at each step by comparing the target with the middle element.
 
-This problem is frequently asked in technical interviews and serves as a building block for more complex linked list problems.
+### Examples:
+Input: nums = [-1,0,3,5,9,12], target = 9
+Output: 4 (9 is at index 4)
+
+Input: nums = [-1,0,3,5,9,12], target = 2
+Output: -1 (2 is not in the array)
+
+### Approaches:
+- Iterative Binary Search (optimal)
+- Recursive Binary Search
         """,
         "approaches": [
             {
                 "id": "iterative",
-                "title": "Approach 1: Iterative Solution",
+                "title": "Approach 1: Iterative Binary Search",
                 "explanation": """
-The iterative approach uses three pointers to reverse the list in a single pass.
+The iterative approach uses two pointers to track the search range and repeatedly narrows down the search space.
 
 ### Algorithm
-1. Initialize three pointers: `prev = None`, `current = head`, `next = None`
-2. Iterate through the list:
-   - Save the next node: `next = current.next`
-   - Reverse the pointer: `current.next = prev`
-   - Move prev forward: `prev = current`
-   - Move current forward: `current = next`
-3. Return `prev` as the new head
+1. Initialize left = 0 and right = len(nums) - 1
+2. While left <= right:
+   - Calculate mid = left + (right - left) // 2
+   - If nums[mid] == target, return mid
+   - If nums[mid] < target, move left to mid + 1 (search right half)
+   - If nums[mid] > target, move right to mid - 1 (search left half)
+3. If not found, return -1
 
 ### Why it works
-At each step, we're breaking the forward link and creating a backward link. By the time we finish traversing, all links are reversed.
+At each step, we eliminate half of the search space by comparing with the middle element. Since the array is sorted, we know which half contains the target (if it exists).
 
-### Visualization
-Original: 1 -> 2 -> 3 -> None
-Step 1:   None <- 1    2 -> 3 -> None
-Step 2:   None <- 1 <- 2    3 -> None
-Step 3:   None <- 1 <- 2 <- 3
+### Example Walkthrough: nums=[-1,0,3,5,9,12], target=9
+```
+Step 1: left=0, right=5, mid=2 (value=3)
+        3 < 9, search right half → left=3
+
+Step 2: left=3, right=5, mid=4 (value=9)
+        9 == 9, found! return 4
+```
+
+### Why use (right - left) // 2?
+Using `mid = left + (right - left) // 2` instead of `mid = (left + right) // 2` prevents integer overflow in languages with fixed integer sizes.
 
 ### Complexity
-- Time: O(n) - single pass through the list
-- Space: O(1) - only using three pointers
+- Time: O(log n) - search space halves each iteration
+- Space: O(1) - only using pointers
             """,
                 "code": {
                     "python": """
 class Solution:
-    def reverseList(self, head):
-        prev = None
-        current = head
+    def search(self, nums, target):
+        left, right = 0, len(nums) - 1
         
-        while current:
-            next_node = current.next
-            current.next = prev
-            prev = current
-            current = next_node
+        while left <= right:
+            mid = left + (right - left) // 2
+            
+            if nums[mid] == target:
+                return mid
+            elif nums[mid] < target:
+                left = mid + 1
+            else:
+                right = mid - 1
         
-        return prev
+        return -1
             """,
                     "java": """
 class Solution {
-    public ListNode reverseList(ListNode head) {
-        ListNode prev = null;
-        ListNode current = head;
+    public int search(int[] nums, int target) {
+        int left = 0, right = nums.length - 1;
         
-        while (current != null) {
-            ListNode nextNode = current.next;
-            current.next = prev;
-            prev = current;
-            current = nextNode;
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+            
+            if (nums[mid] == target) {
+                return mid;
+            } else if (nums[mid] < target) {
+                left = mid + 1;
+            } else {
+                right = mid - 1;
+            }
         }
         
-        return prev;
+        return -1;
     }
 }
             """,
                     "cpp": """
 class Solution {
 public:
-    ListNode* reverseList(ListNode* head) {
-        ListNode* prev = nullptr;
-        ListNode* current = head;
+    int search(vector<int>& nums, int target) {
+        int left = 0, right = nums.size() - 1;
         
-        while (current != nullptr) {
-            ListNode* nextNode = current->next;
-            current->next = prev;
-            prev = current;
-            current = nextNode;
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+            
+            if (nums[mid] == target) {
+                return mid;
+            } else if (nums[mid] < target) {
+                left = mid + 1;
+            } else {
+                right = mid - 1;
+            }
         }
         
-        return prev;
+        return -1;
     }
 };
             """
@@ -408,140 +564,174 @@ public:
             },
             {
                 "id": "recursive",
-                "title": "Approach 2: Recursive Solution",
+                "title": "Approach 2: Recursive Binary Search",
                 "explanation": """
-The recursive approach leverages the call stack to reverse the list from the end backwards.
-
-### Key Idea
-The recursion goes deep until it reaches the last node, which becomes the new head. As the recursion unwinds, each node's next pointer is reversed.
+The recursive approach implements binary search using recursion, which naturally represents the divide-and-conquer nature of the algorithm.
 
 ### Algorithm
-1. Base case: if head is None or head.next is None, return head
-2. Recursively call reverseList on head.next to get the new head
-3. Set head.next.next = head (reverse the link)
-4. Set head.next = None (break the old link)
-5. Return the new head
+1. Define a helper function: binarySearch(nums, target, left, right)
+2. Base case: if left > right, return -1
+3. Calculate mid = left + (right - left) // 2
+4. If nums[mid] == target, return mid
+5. If nums[mid] < target, recursively search right half
+6. If nums[mid] > target, recursively search left half
 
-### How it works
-The recursion reaches the last node first, making it the new head. As we return from each recursive call, we reverse the pointer of the current node.
+### Why it works
+Each recursive call narrows the search space by half, similar to the iterative approach, but uses the call stack to maintain state.
 
-### Example trace (for 1->2->3):
-- Call reverseList(1): waits for reverseList(2)
-- Call reverseList(2): waits for reverseList(3)
-- Call reverseList(3): returns 3 (base case)
-- Back in reverseList(2): set 3.next = 2, return 3
-- Back in reverseList(1): set 2.next = 1, return 3
-- Result: 3->2->1->None
+### Example Trace: nums=[-1,0,3,5,9,12], target=9
+```
+Call 1: search(nums, 9, 0, 5)
+        mid=2 (value=3), 3 < 9
+        → search(nums, 9, 3, 5)
+
+Call 2: search(nums, 9, 3, 5)
+        mid=4 (value=9), 9 == 9
+        → return 4
+```
+
+### Comparison with Iterative
+The recursive approach is more elegant and easier to understand, but uses additional stack space. For practical purposes, the iterative approach is preferred.
 
 ### Complexity
-- Time: O(n) - visiting each node once
-- Space: O(n) - recursion call stack depth
+- Time: O(log n) - same as iterative
+- Space: O(log n) - recursion call stack depth
             """,
                 "code": {
                     "python": """
 class Solution:
-    def reverseList(self, head):
-        # Base case: empty list or single node
-        if not head or not head.next:
-            return head
+    def search(self, nums, target):
+        return self.binarySearch(nums, target, 0, len(nums) - 1)
+    
+    def binarySearch(self, nums, target, left, right):
+        if left > right:
+            return -1
         
-        # Recursively reverse the rest of the list
-        new_head = self.reverseList(head.next)
+        mid = left + (right - left) // 2
         
-        # Reverse the pointer
-        head.next.next = head
-        head.next = None
-        
-        return new_head
+        if nums[mid] == target:
+            return mid
+        elif nums[mid] < target:
+            return self.binarySearch(nums, target, mid + 1, right)
+        else:
+            return self.binarySearch(nums, target, left, mid - 1)
             """,
                     "java": """
 class Solution {
-    public ListNode reverseList(ListNode head) {
-        // Base case: empty list or single node
-        if (head == null || head.next == null) {
-            return head;
+    public int search(int[] nums, int target) {
+        return binarySearch(nums, target, 0, nums.length - 1);
+    }
+    
+    private int binarySearch(int[] nums, int target, int left, int right) {
+        if (left > right) {
+            return -1;
         }
         
-        // Recursively reverse the rest of the list
-        ListNode newHead = reverseList(head.next);
+        int mid = left + (right - left) / 2;
         
-        // Reverse the pointer
-        head.next.next = head;
-        head.next = null;
-        
-        return newHead;
+        if (nums[mid] == target) {
+            return mid;
+        } else if (nums[mid] < target) {
+            return binarySearch(nums, target, mid + 1, right);
+        } else {
+            return binarySearch(nums, target, left, mid - 1);
+        }
     }
 }
             """,
                     "cpp": """
 class Solution {
 public:
-    ListNode* reverseList(ListNode* head) {
-        // Base case: empty list or single node
-        if (head == nullptr || head->next == nullptr) {
-            return head;
+    int search(vector<int>& nums, int target) {
+        return binarySearch(nums, target, 0, nums.size() - 1);
+    }
+    
+private:
+    int binarySearch(vector<int>& nums, int target, int left, int right) {
+        if (left > right) {
+            return -1;
         }
         
-        // Recursively reverse the rest of the list
-        ListNode* newHead = reverseList(head->next);
+        int mid = left + (right - left) / 2;
         
-        // Reverse the pointer
-        head->next->next = head;
-        head->next = nullptr;
-        
-        return newHead;
+        if (nums[mid] == target) {
+            return mid;
+        } else if (nums[mid] < target) {
+            return binarySearch(nums, target, mid + 1, right);
+        } else {
+            return binarySearch(nums, target, left, mid - 1);
+        }
     }
 };
             """
                 }
             }
         ],
-        "videoUrl": "https://www.youtube.com/watch?v=N_Y4lZBEi0g"
+        "videoUrl": "https://www.youtube.com/watch?v=s4DPM8ct1pI"
     },
     "testcases": [
         {
-            "input": "[1,2,3,4,5]",
-            "expectedOutput": "[5,4,3,2,1]",
+            "input_to_show": "[-1,0,3,5,9,12]\n9",
+            "input": "-1 0 3 5 9 12\n9",
+            "expectedOutput_to_show": "4",
+            "expectedOutput": "4",
             "isHidden": False,
             "order": 1,
-            "explanation": "The list is reversed: 5 becomes the head, followed by 4, 3, 2, and 1."
+            "explanation": ""
         },
         {
-            "input": "[1,2]",
-            "expectedOutput": "[2,1]",
+            "input_to_show": "[-1,0,3,5,9,12]\n2",
+            "input": "-1 0 3 5 9 12\n2",
+            "expectedOutput_to_show": "-1",
+            "expectedOutput": "-1",
             "isHidden": False,
             "order": 2,
-            "explanation": "Simple two-node reversal."
+            "explanation": ""
         },
         {
-            "input": "[]",
-            "expectedOutput": "[]",
+            "input_to_show": "[5]\n5",
+            "input": "5\n5",
+            "expectedOutput_to_show": "0",
+            "expectedOutput": "0",
             "isHidden": False,
             "order": 3,
-            "explanation": "Empty list remains empty."
+            "explanation": ""
         },
         {
-            "input": "[1]",
-            "expectedOutput": "[1]",
+            "input_to_show": "[2,5]\n5",
+            "input": "2 5\n5",
+            "expectedOutput_to_show": "1",
+            "expectedOutput": "1",
             "isHidden": True,
             "order": 4,
-            "explanation": "Single node list remains unchanged."
+            "explanation": ""
         },
         {
-            "input": "[1,2,3,4,5,6,7,8,9,10]",
-            "expectedOutput": "[10,9,8,7,6,5,4,3,2,1]",
+            "input_to_show": "[1,2,3,4,5,6,7,8,9,10]\n1",
+            "input": "1 2 3 4 5 6 7 8 9 10\n1",
+            "expectedOutput_to_show": "0",
+            "expectedOutput": "0",
             "isHidden": True,
             "order": 5,
-            "explanation": "Longer list reversal test."
+            "explanation": ""
+        },
+        {
+            "input_to_show": "[1,2,3,4,5,6,7,8,9,10]\n10",
+            "input": "1 2 3 4 5 6 7 8 9 10\n10",
+            "expectedOutput_to_show": "9",
+            "expectedOutput": "9",
+            "isHidden": True,
+            "order": 6,
+            "explanation": ""
         }
     ],
     "tags": [
         {
-            "name": "Linked List",
+            "name": "Array",
             "category": "topic"
         },
         {
-            "name": "Recursion",
+            "name": "Binary Search",
             "category": "topic"
         },
         {
@@ -549,33 +739,36 @@ public:
             "category": "company"
         },
         {
-            "name": "Microsoft",
+            "name": "Amazon",
             "category": "company"
         },
         {
-            "name": "Amazon",
+            "name": "Google",
+            "category": "company"
+        },
+        {
+            "name": "Microsoft",
             "category": "company"
         }
     ],
     "snippets": [
         {
-            "code": "# Definition for singly-linked list.\n# class ListNode:\n#     def __init__(self, val=0, next=None):\n#         self.val = val\n#         self.next = next\nclass Solution:\n    def reverseList(self, head):\n        pass",
+            "code": "class Solution:\n    def search(self, nums, target):\n        pass\n\nif __name__ == '__main__':\n    nums = list(map(int, input().split()))\n    target = int(input())\n    sol = Solution()\n    result = sol.search(nums, target)\n    print(result)",
             "lang": "python",
             "compiler_language_id": 71
         },
         {
-            "code": "/**\n * Definition for singly-linked list.\n * public class ListNode {\n *     int val;\n *     ListNode next;\n *     ListNode() {}\n *     ListNode(int val) { this.val = val; }\n *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }\n * }\n */\nclass Solution {\n    public ListNode reverseList(ListNode head) {\n        return null;\n    }\n}",
+            "code": "import java.util.*;\n\nclass Solution {\n    public int search(int[] nums, int target) {\n        return -1;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        String[] parts = sc.nextLine().split(\" \");\n        int[] nums = new int[parts.length];\n        for (int i = 0; i < parts.length; i++) {\n            nums[i] = Integer.parseInt(parts[i]);\n        }\n        int target = sc.nextInt();\n        Solution sol = new Solution();\n        int result = sol.search(nums, target);\n        System.out.println(result);\n        sc.close();\n    }\n}",
             "lang": "java",
             "compiler_language_id": 62
         },
         {
-            "code": "/**\n * Definition for singly-linked list.\n * struct ListNode {\n *     int val;\n *     ListNode *next;\n *     ListNode() : val(0), next(nullptr) {}\n *     ListNode(int x) : val(x), next(nullptr) {}\n *     ListNode(int x, ListNode *next) : val(x), next(next) {}\n * };\n */\nclass Solution {\npublic:\n    ListNode* reverseList(ListNode* head) {\n        return nullptr;\n    }\n};",
+            "code": "#include <iostream>\n#include <vector>\n#include <sstream>\nusing namespace std;\n\nclass Solution {\npublic:\n    int search(vector<int>& nums, int target) {\n        return -1;\n    }\n};\n\nint main() {\n    string line;\n    getline(cin, line);\n    istringstream iss(line);\n    vector<int> nums;\n    int num;\n    while (iss >> num) {\n        nums.push_back(num);\n    }\n    int target;\n    cin >> target;\n    Solution sol;\n    int result = sol.search(nums, target);\n    cout << result << endl;\n    return 0;\n}",
             "lang": "cpp",
             "compiler_language_id": 54
         }
     ]
 }
-
 
 ########################################################################
 
@@ -854,46 +1047,58 @@ public:
     },
     "testcases": [
         {
-            "input": "\"()\"",
+            "input_to_show": "\"()\"",
+            "input": "()",
+            "expectedOutput_to_show": "true",
             "expectedOutput": "true",
             "isHidden": False,
             "order": 1,
-            "explanation": "Simple valid pair of parentheses."
+            "explanation": ""
         },
         {
-            "input": "\"()[]{}\"",
+            "input_to_show": "\"()[]{}\"",
+            "input": "()[]{}",
+            "expectedOutput_to_show": "true",
             "expectedOutput": "true",
             "isHidden": False,
             "order": 2,
-            "explanation": "Multiple types of brackets, all properly matched."
+            "explanation": ""
         },
         {
-            "input": "\"(]\"",
+            "input_to_show": "\"(]\"",
+            "input": "(]",
+            "expectedOutput_to_show": "false",
             "expectedOutput": "false",
             "isHidden": False,
             "order": 3,
-            "explanation": "Opening '(' is closed with ']' which doesn't match."
+            "explanation": ""
         },
         {
-            "input": "\"([)]\"",
+            "input_to_show": "\"([)]\"",
+            "input": "([)]",
+            "expectedOutput_to_show": "false",
             "expectedOutput": "false",
             "isHidden": True,
             "order": 4,
-            "explanation": "Brackets are interleaved incorrectly - '[' should be closed before ')'."
+            "explanation": ""
         },
         {
-            "input": "\"{[]}\"",
+            "input_to_show": "\"{[]}\"",
+            "input": "{[]}",
+            "expectedOutput_to_show": "true",
             "expectedOutput": "true",
             "isHidden": True,
             "order": 5,
-            "explanation": "Properly nested brackets."
+            "explanation": ""
         },
         {
-            "input": "\"((((\"",
+            "input_to_show": "\"((((\"",
+            "input": "((((",
+            "expectedOutput_to_show": "false",
             "expectedOutput": "false",
             "isHidden": True,
             "order": 6,
-            "explanation": "Opening brackets without any closing brackets."
+            "explanation": ""
         }
     ],
     "tags": [
@@ -924,17 +1129,17 @@ public:
     ],
     "snippets": [
         {
-            "code": "class Solution:\n    def isValid(self, s):\n        pass",
+            "code": "class Solution:\n    def isValid(self, s):\n        pass\n\nif __name__ == '__main__':\n    s = input().strip()\n    sol = Solution()\n    result = sol.isValid(s)\n    print(str(result).lower())",
             "lang": "python",
             "compiler_language_id": 71
         },
         {
-            "code": "class Solution {\n    public boolean isValid(String s) {\n        return false;\n    }\n}",
+            "code": "import java.util.*;\n\nclass Solution {\n    public boolean isValid(String s) {\n        return false;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        String s = sc.nextLine().trim();\n        Solution sol = new Solution();\n        boolean result = sol.isValid(s);\n        System.out.println(result);\n        sc.close();\n    }\n}",
             "lang": "java",
             "compiler_language_id": 62
         },
         {
-            "code": "class Solution {\npublic:\n    bool isValid(string s) {\n        return false;\n    }\n};",
+            "code": "#include <bits/stdc++.h>\nusing namespace std;\n\nclass Solution {\npublic:\n    bool isValid(string s) {\n        return false;\n    }\n};\n\nint main() {\n    string s;\n    getline(cin, s);\n    Solution sol;\n    bool result = sol.isValid(s);\n    cout << (result ? \"true\" : \"false\") << endl;\n    return 0;\n}",
             "lang": "cpp",
             "compiler_language_id": 54
         }
@@ -1255,46 +1460,58 @@ public:
     },
     "testcases": [
         {
-            "input": "[1,2,4]\n[1,3,4]",
-            "expectedOutput": "[1,1,2,3,4,4]",
+            "input_to_show": "[1, 2, 4]\n[1, 3, 4]",
+            "input": "1 2 4\n1 3 4",
+            "expectedOutput_to_show": "[1, 1, 2, 3, 4, 4]",
+            "expectedOutput": "[1, 1, 2, 3, 4, 4]",
             "isHidden": False,
             "order": 1,
-            "explanation": "Both lists have common values and need proper interleaving."
+            "explanation": ""
         },
         {
-            "input": "[]\n[]",
+            "input_to_show": "[]\n[]",
+            "input": "\n",
+            "expectedOutput_to_show": "[]",
             "expectedOutput": "[]",
             "isHidden": False,
             "order": 2,
-            "explanation": "Both lists are empty."
+            "explanation": ""
         },
         {
-            "input": "[]\n[0]",
+            "input_to_show": "[]\n[0]",
+            "input": "\n0",
+            "expectedOutput_to_show": "[0]",
             "expectedOutput": "[0]",
             "isHidden": False,
             "order": 3,
-            "explanation": "One list is empty, return the other."
+            "explanation": ""
         },
         {
-            "input": "[1,2,3]\n[4,5,6]",
-            "expectedOutput": "[1,2,3,4,5,6]",
+            "input_to_show": "[1, 2, 3]\n[4, 5, 6]",
+            "input": "1 2 3\n4 5 6",
+            "expectedOutput_to_show": "[1, 2, 3, 4, 5, 6]",
+            "expectedOutput": "[1, 2, 3, 4, 5, 6]",
             "isHidden": True,
             "order": 4,
-            "explanation": "All elements of list1 come before all elements of list2."
+            "explanation": ""
         },
         {
-            "input": "[5]\n[1,2,4]",
-            "expectedOutput": "[1,2,4,5]",
+            "input_to_show": "[5]\n[1, 2, 4]",
+            "input": "5\n1 2 4",
+            "expectedOutput_to_show": "[1, 2, 4, 5]",
+            "expectedOutput": "[1, 2, 4, 5]",
             "isHidden": True,
             "order": 5,
-            "explanation": "Single element list merged with multi-element list."
+            "explanation": ""
         },
         {
-            "input": "[-9,-7,-3,-3,0,0,0,1]\n[-10,-6,-4,-1]",
-            "expectedOutput": "[-10,-9,-7,-6,-4,-3,-3,-1,0,0,0,1]",
+            "input_to_show": "[-9, -7, -3, -3, 0, 0, 0, 1]\n[-10, -6, -4, -1]",
+            "input": "-9 -7 -3 -3 0 0 0 1\n-10 -6 -4 -1",
+            "expectedOutput_to_show": "[-10, -9, -7, -6, -4, -3, -3, -1, 0, 0, 0, 1]",
+            "expectedOutput": "[-10, -9, -7, -6, -4, -3, -3, -1, 0, 0, 0, 1]",
             "isHidden": True,
             "order": 6,
-            "explanation": "Lists with negative numbers and duplicates."
+            "explanation": ""
         }
     ],
     "tags": [
@@ -1325,17 +1542,17 @@ public:
     ],
     "snippets": [
         {
-            "code": "# Definition for singly-linked list.\n# class ListNode:\n#     def __init__(self, val=0, next=None):\n#         self.val = val\n#         self.next = next\nclass Solution:\n    def mergeTwoLists(self, list1, list2):\n        pass",
+            "code": "class ListNode:\n    def __init__(self, val=0, next=None):\n        self.val = val\n        self.next = next\n\nclass Solution:\n    def mergeTwoLists(self, list1, list2):\n        pass\n\nif __name__ == '__main__':\n    def list_to_linkedlist(arr):\n        if not arr:\n            return None\n        head = ListNode(arr[0])\n        current = head\n        for val in arr[1:]:\n            current.next = ListNode(val)\n            current = current.next\n        return head\n    \n    def linkedlist_to_list(head):\n        result = []\n        current = head\n        while current:\n            result.append(current.val)\n            current = current.next\n        return result\n    \n    line1 = input().strip()\n    line2 = input().strip()\n    \n    list1 = list(map(int, line1.split())) if line1 else []\n    list2 = list(map(int, line2.split())) if line2 else []\n    \n    head1 = list_to_linkedlist(list1)\n    head2 = list_to_linkedlist(list2)\n    \n    sol = Solution()\n    result_head = sol.mergeTwoLists(head1, head2)\n    result = linkedlist_to_list(result_head)\n    print(result)",
             "lang": "python",
             "compiler_language_id": 71
         },
         {
-            "code": "/**\n * Definition for singly-linked list.\n * public class ListNode {\n *     int val;\n *     ListNode next;\n *     ListNode() {}\n *     ListNode(int val) { this.val = val; }\n *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }\n * }\n */\nclass Solution {\n    public ListNode mergeTwoLists(ListNode list1, ListNode list2) {\n        return null;\n    }\n}",
+            "code": "import java.util.*;\n\nclass ListNode {\n    int val;\n    ListNode next;\n    ListNode() {}\n    ListNode(int val) { this.val = val; }\n    ListNode(int val, ListNode next) { this.val = val; this.next = next; }\n}\n\nclass Solution {\n    public ListNode mergeTwoLists(ListNode list1, ListNode list2) {\n        return null;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        String line1 = sc.nextLine().trim();\n        String line2 = sc.nextLine().trim();\n        \n        ListNode head1 = null;\n        if (!line1.isEmpty()) {\n            String[] parts = line1.split(\" \");\n            head1 = new ListNode(Integer.parseInt(parts[0]));\n            ListNode current = head1;\n            for (int i = 1; i < parts.length; i++) {\n                current.next = new ListNode(Integer.parseInt(parts[i]));\n                current = current.next;\n            }\n        }\n        \n        ListNode head2 = null;\n        if (!line2.isEmpty()) {\n            String[] parts = line2.split(\" \");\n            head2 = new ListNode(Integer.parseInt(parts[0]));\n            ListNode current = head2;\n            for (int i = 1; i < parts.length; i++) {\n                current.next = new ListNode(Integer.parseInt(parts[i]));\n                current = current.next;\n            }\n        }\n        \n        Solution sol = new Solution();\n        ListNode result = sol.mergeTwoLists(head1, head2);\n        \n        List<Integer> output = new ArrayList<>();\n        while (result != null) {\n            output.add(result.val);\n            result = result.next;\n        }\n        \n        System.out.println(output);\n        sc.close();\n    }\n}",
             "lang": "java",
             "compiler_language_id": 62
         },
         {
-            "code": "/**\n * Definition for singly-linked list.\n * struct ListNode {\n *     int val;\n *     ListNode *next;\n *     ListNode() : val(0), next(nullptr) {}\n *     ListNode(int x) : val(x), next(nullptr) {}\n *     ListNode(int x, ListNode *next) : val(x), next(next) {}\n * };\n */\nclass Solution {\npublic:\n    ListNode* mergeTwoLists(ListNode* list1, ListNode* list2) {\n        return nullptr;\n    }\n};",
+            "code": "#include <iostream>\n#include <vector>\n#include <sstream>\nusing namespace std;\n\nstruct ListNode {\n    int val;\n    ListNode *next;\n    ListNode() : val(0), next(nullptr) {}\n    ListNode(int x) : val(x), next(nullptr) {}\n    ListNode(int x, ListNode *next) : val(x), next(next) {}\n};\n\nclass Solution {\npublic:\n    ListNode* mergeTwoLists(ListNode* list1, ListNode* list2) {\n        return nullptr;\n    }\n};\n\nint main() {\n    string line1, line2;\n    getline(cin, line1);\n    getline(cin, line2);\n    \n    ListNode* head1 = nullptr;\n    if (!line1.empty()) {\n        istringstream iss(line1);\n        int val;\n        iss >> val;\n        head1 = new ListNode(val);\n        ListNode* current = head1;\n        while (iss >> val) {\n            current->next = new ListNode(val);\n            current = current->next;\n        }\n    }\n    \n    ListNode* head2 = nullptr;\n    if (!line2.empty()) {\n        istringstream iss(line2);\n        int val;\n        iss >> val;\n        head2 = new ListNode(val);\n        ListNode* current = head2;\n        while (iss >> val) {\n            current->next = new ListNode(val);\n            current = current->next;\n        }\n    }\n    \n    Solution sol;\n    ListNode* result = sol.mergeTwoLists(head1, head2);\n    \n    cout << \"[\";\n    bool first = true;\n    while (result != nullptr) {\n        if (!first) cout << \", \";\n        cout << result->val;\n        first = false;\n        result = result->next;\n    }\n    cout << \"]\" << endl;\n    \n    return 0;\n}",
             "lang": "cpp",
             "compiler_language_id": 54
         }
@@ -1610,46 +1827,58 @@ public:
     },
     "testcases": [
         {
-            "input": "[7,1,5,3,6,4]",
+            "input_to_show": "[7, 1, 5, 3, 6, 4]",
+            "input": "7 1 5 3 6 4",
+            "expectedOutput_to_show": "5",
             "expectedOutput": "5",
             "isHidden": False,
             "order": 1,
-            "explanation": "Buy on day 2 (price = 1) and sell on day 5 (price = 6), profit = 6-1 = 5."
+            "explanation": ""
         },
         {
-            "input": "[7,6,4,3,1]",
+            "input_to_show": "[7, 6, 4, 3, 1]",
+            "input": "7 6 4 3 1",
+            "expectedOutput_to_show": "0",
             "expectedOutput": "0",
             "isHidden": False,
             "order": 2,
-            "explanation": "Prices only decrease, so no profit can be made."
+            "explanation": ""
         },
         {
-            "input": "[2,4,1]",
+            "input_to_show": "[2, 4, 1]",
+            "input": "2 4 1",
+            "expectedOutput_to_show": "2",
             "expectedOutput": "2",
             "isHidden": False,
             "order": 3,
-            "explanation": "Buy on day 1 (price = 2) and sell on day 2 (price = 4), profit = 2."
+            "explanation": ""
         },
         {
-            "input": "[3,2,6,5,0,3]",
+            "input_to_show": "[3, 2, 6, 5, 0, 3]",
+            "input": "3 2 6 5 0 3",
+            "expectedOutput_to_show": "4",
             "expectedOutput": "4",
             "isHidden": True,
             "order": 4,
-            "explanation": "Buy on day 2 (price = 2) and sell on day 3 (price = 6), profit = 4."
+            "explanation": ""
         },
         {
-            "input": "[1,2,3,4,5]",
+            "input_to_show": "[1, 2, 3, 4, 5]",
+            "input": "1 2 3 4 5",
+            "expectedOutput_to_show": "4",
             "expectedOutput": "4",
             "isHidden": True,
             "order": 5,
-            "explanation": "Buy on day 1 (price = 1) and sell on day 5 (price = 5), profit = 4."
+            "explanation": ""
         },
         {
-            "input": "[2,1,2,0,1]",
+            "input_to_show": "[2, 1, 2, 0, 1]",
+            "input": "2 1 2 0 1",
+            "expectedOutput_to_show": "1",
             "expectedOutput": "1",
             "isHidden": True,
             "order": 6,
-            "explanation": "Multiple valid transactions, but max profit is 1 (buy at 0, sell at 1)."
+            "explanation": ""
         }
     ],
     "tags": [
@@ -1684,17 +1913,17 @@ public:
     ],
     "snippets": [
         {
-            "code": "class Solution:\n    def maxProfit(self, prices):\n        pass",
+            "code": "class Solution:\n    def maxProfit(self, prices):\n        pass\n\nif __name__ == '__main__':\n    prices = list(map(int, input().split()))\n    sol = Solution()\n    result = sol.maxProfit(prices)\n    print(result)",
             "lang": "python",
             "compiler_language_id": 71
         },
         {
-            "code": "class Solution {\n    public int maxProfit(int[] prices) {\n        return 0;\n    }\n}",
+            "code": "import java.util.*;\n\nclass Solution {\n    public int maxProfit(int[] prices) {\n        return 0;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        String[] parts = sc.nextLine().split(\" \");\n        int[] prices = new int[parts.length];\n        for (int i = 0; i < parts.length; i++) {\n            prices[i] = Integer.parseInt(parts[i]);\n        }\n        Solution sol = new Solution();\n        int result = sol.maxProfit(prices);\n        System.out.println(result);\n        sc.close();\n    }\n}",
             "lang": "java",
             "compiler_language_id": 62
         },
         {
-            "code": "class Solution {\npublic:\n    int maxProfit(vector<int>& prices) {\n        return 0;\n    }\n};",
+            "code": "#include <bits/stdc++.h>\nusing namespace std;\n\nclass Solution {\npublic:\n    int maxProfit(vector<int>& prices) {\n        return 0;\n    }\n};\n\nint main() {\n    string line;\n    getline(cin, line);\n    istringstream iss(line);\n    vector<int> prices;\n    int price;\n    while (iss >> price) {\n        prices.push_back(price);\n    }\n    Solution sol;\n    int result = sol.maxProfit(prices);\n    cout << result << endl;\n    return 0;\n}",
             "lang": "cpp",
             "compiler_language_id": 54
         }
@@ -2052,46 +2281,58 @@ private:
     },
     "testcases": [
         {
-            "input": "[-2,1,-3,4,-1,2,1,-5,4]",
+            "input_to_show": "[-2, 1, -3, 4, -1, 2, 1, -5, 4]",
+            "input": "-2 1 -3 4 -1 2 1 -5 4",
+            "expectedOutput_to_show": "6",
             "expectedOutput": "6",
             "isHidden": False,
             "order": 1,
-            "explanation": "The subarray [4,-1,2,1] has the largest sum of 6."
+            "explanation": ""
         },
         {
-            "input": "[1]",
+            "input_to_show": "[1]",
+            "input": "1",
+            "expectedOutput_to_show": "1",
             "expectedOutput": "1",
             "isHidden": False,
             "order": 2,
-            "explanation": "Single element array, so the maximum sum is that element."
+            "explanation": ""
         },
         {
-            "input": "[5,4,-1,7,8]",
+            "input_to_show": "[5, 4, -1, 7, 8]",
+            "input": "5 4 -1 7 8",
+            "expectedOutput_to_show": "23",
             "expectedOutput": "23",
             "isHidden": False,
             "order": 3,
-            "explanation": "The entire array is the maximum subarray with sum 23."
+            "explanation": ""
         },
         {
-            "input": "[-1]",
+            "input_to_show": "[-1]",
+            "input": "-1",
+            "expectedOutput_to_show": "-1",
             "expectedOutput": "-1",
             "isHidden": True,
             "order": 4,
-            "explanation": "Single negative element, return it as the maximum."
+            "explanation": ""
         },
         {
-            "input": "[-2,-1,-3,-4]",
+            "input_to_show": "[-2, -1, -3, -4]",
+            "input": "-2 -1 -3 -4",
+            "expectedOutput_to_show": "-1",
             "expectedOutput": "-1",
             "isHidden": True,
             "order": 5,
-            "explanation": "All negative numbers, pick the largest (least negative) one."
+            "explanation": ""
         },
         {
-            "input": "[1,2,-1,-2,2,1,-2,1,4,-5,4]",
+            "input_to_show": "[1, 2, -1, -2, 2, 1, -2, 1, 4, -5, 4]",
+            "input": "1 2 -1 -2 2 1 -2 1 4 -5 4",
+            "expectedOutput_to_show": "6",
             "expectedOutput": "6",
             "isHidden": True,
             "order": 6,
-            "explanation": "Complex array with mixed positive and negative values."
+            "explanation": ""
         }
     ],
     "tags": [
@@ -2126,17 +2367,17 @@ private:
     ],
     "snippets": [
         {
-            "code": "class Solution:\n    def maxSubArray(self, nums):\n        pass",
+            "code": "class Solution:\n    def maxSubArray(self, nums):\n        pass\n\nif __name__ == '__main__':\n    nums = list(map(int, input().split()))\n    sol = Solution()\n    result = sol.maxSubArray(nums)\n    print(result)",
             "lang": "python",
             "compiler_language_id": 71
         },
         {
-            "code": "class Solution {\n    public int maxSubArray(int[] nums) {\n        return 0;\n    }\n}",
+            "code": "import java.util.*;\n\nclass Solution {\n    public int maxSubArray(int[] nums) {\n        return 0;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        String[] parts = sc.nextLine().split(\" \");\n        int[] nums = new int[parts.length];\n        for (int i = 0; i < parts.length; i++) {\n            nums[i] = Integer.parseInt(parts[i]);\n        }\n        Solution sol = new Solution();\n        int result = sol.maxSubArray(nums);\n        System.out.println(result);\n        sc.close();\n    }\n}",
             "lang": "java",
             "compiler_language_id": 62
         },
         {
-            "code": "class Solution {\npublic:\n    int maxSubArray(vector<int>& nums) {\n        return 0;\n    }\n};",
+            "code": "#include <bits/stdc++.h>\n#include <vector>\n#include <sstream>\nusing namespace std;\n\nclass Solution {\npublic:\n    int maxSubArray(vector<int>& nums) {\n        return 0;\n    }\n};\n\nint main() {\n    string line;\n    getline(cin, line);\n    istringstream iss(line);\n    vector<int> nums;\n    int num;\n    while (iss >> num) {\n        nums.push_back(num);\n    }\n    Solution sol;\n    int result = sol.maxSubArray(nums);\n    cout << result << endl;\n    return 0;\n}",
             "lang": "cpp",
             "compiler_language_id": 54
         }
@@ -2544,46 +2785,58 @@ public:
     },
     "testcases": [
         {
+            "input_to_show": "2",
             "input": "2",
+            "expectedOutput_to_show": "2",
             "expectedOutput": "2",
             "isHidden": False,
             "order": 1,
-            "explanation": "Two ways: [1,1] or [2]"
+            "explanation": ""
         },
         {
+            "input_to_show": "3",
             "input": "3",
+            "expectedOutput_to_show": "3",
             "expectedOutput": "3",
             "isHidden": False,
             "order": 2,
-            "explanation": "Three ways: [1,1,1], [1,2], or [2,1]"
+            "explanation": ""
         },
         {
+            "input_to_show": "1",
             "input": "1",
+            "expectedOutput_to_show": "1",
             "expectedOutput": "1",
             "isHidden": False,
             "order": 3,
-            "explanation": "Only one way: [1]"
+            "explanation": ""
         },
         {
+            "input_to_show": "5",
             "input": "5",
+            "expectedOutput_to_show": "8",
             "expectedOutput": "8",
             "isHidden": True,
             "order": 4,
-            "explanation": "Eight different ways to climb 5 steps."
+            "explanation": ""
         },
         {
+            "input_to_show": "10",
             "input": "10",
+            "expectedOutput_to_show": "89",
             "expectedOutput": "89",
             "isHidden": True,
             "order": 5,
-            "explanation": "89 different ways to climb 10 steps (10th Fibonacci number)."
+            "explanation": ""
         },
         {
+            "input_to_show": "20",
             "input": "20",
+            "expectedOutput_to_show": "10946",
             "expectedOutput": "10946",
             "isHidden": True,
             "order": 6,
-            "explanation": "Testing larger input for efficiency."
+            "explanation": ""
         }
     ],
     "tags": [
@@ -2614,19 +2867,19 @@ public:
     ],
     "snippets": [
         {
-            "code": "class Solution:\n    def climbStairs(self, n):\n        pass",
+            "code": "class Solution:\n    def climbStairs(self, n):\n        pass\n\nif __name__ == '__main__':\n    n = int(input())\n    sol = Solution()\n    result = sol.climbStairs(n)\n    print(result)",
             "lang": "python",
             "compiler_language_id": 71
         },
         {
-            "code": "class Solution {\n    public int climbStairs(int n) {\n        return 0;\n    }\n}",
+            "code": "import java.util.*;\n\nclass Solution {\n    public int climbStairs(int n) {\n        return 0;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int n = sc.nextInt();\n        Solution sol = new Solution();\n        int result = sol.climbStairs(n);\n        System.out.println(result);\n        sc.close();\n    }\n}",
             "lang": "java",
-            "compiler_language_id": 63
+            "compiler_language_id": 62
         },
         {
-            "code": "class Solution {\npublic:\n    int climbStairs(int n) {\n        return 0;\n    }\n};",
+            "code": "#include <iostream>\nusing namespace std;\n\nclass Solution {\npublic:\n    int climbStairs(int n) {\n        return 0;\n    }\n};\n\nint main() {\n    int n;\n    cin >> n;\n    Solution sol;\n    int result = sol.climbStairs(n);\n    cout << result << endl;\n    return 0;\n}",
             "lang": "cpp",
-            "compiler_language_id": 42
+            "compiler_language_id": 54
         }
     ]
 }
