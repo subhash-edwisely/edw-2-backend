@@ -325,8 +325,10 @@ def create_new_submission(data):
             ).first()
 
             print("existing", existing)
-            
+
+
             xp_gain = 0
+            
             if not existing:
                 xp_gain = Problem.query.get(problem_id).xp_reward
                 solved = SolvedProblem(
