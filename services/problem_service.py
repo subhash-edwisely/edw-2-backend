@@ -12,6 +12,7 @@ from models.solved_problem import SolvedProblem
 from sqlalchemy.orm import joinedload, selectinload
 from db import db
 from data import get_data
+import time
 import random
 
 
@@ -29,12 +30,32 @@ def fetch_all_problems(user_id):
     #     } for p in problems
     # ]
 
+    start = time.time()
+    print("Sovled ids start : ", start)
 
-    solved_ids = (s.problem_id for s in SolvedProblem.query.filter_by(user_id=user_id).with_entities(SolvedProblem.problem_id).all())
+    solved_ids = [int(s.problem_id) for s in SolvedProblem.query.filter_by(user_id=user_id).with_entities(SolvedProblem.problem_id).all()]
+
+    solved_ids_end = time.time()
+    print("Solved ids end : ", round((solved_ids_end - start)*1e3) , "ms")
+
 
     problems = Problem.query.options(
         selectinload(Problem.tags).selectinload(ProblemTag.tag),
     ).all()
+
+
+    print("ALL problems end : ", round((time.time() - solved_ids_end)*1e3))
+
+
+    print("SOlved ids  :",[(id, type(id)) for id in solved_ids])
+
+
+    for problem in problems:
+        print(problem.id , type(problem.id))
+        if problem.id in solved_ids:
+            print('yessssssss')
+
+
 
     return [
         {
@@ -54,7 +75,7 @@ def fetch_all_problems(user_id):
 
                 for t in problem.tags
             ],
-            "solved_status": problem.id in solved_ids
+            "solved_status": int(problem.id) in solved_ids
         } 
         
         for problem in problems
@@ -77,6 +98,11 @@ def fetch_problem_by_id(problem_id: int, user_id):
     # tags = Tag.query.join(ProblemTag).join(Problem).filter(Problem.id == problem_id).order_by(Tag.order).all()
     # testcases = Testcase.query.join(Problem).filter(Problem.id == problem_id).order_by(Testcase.order).all()
 
+
+    start = time.time()
+    print("Start time", start)
+
+
     problem = (
         Problem.query.options(
             joinedload(Problem.editorial),
@@ -88,15 +114,34 @@ def fetch_problem_by_id(problem_id: int, user_id):
         ).filter(Problem.id == problem_id).first()
     )
 
+    problem_query_end_time = time.time()
+
+    print("Prolem query total time taken : ", round((problem_query_end_time - start)*1e3), "ms")
+
+
+
 
     languages = {snippet.language for snippet in problem.snippets if snippet.language is not None}
 
     print("Languages:", languages)
 
+
+    lang_query_end_time = time.time()
+
+    print("lang query total time taken : ", round((lang_query_end_time - problem_query_end_time)*1e3),"ms")
+
+
     if not problem:
         return None
     
     submissions = Submission.query.filter_by(user_id=user_id, problem_id=problem_id).all()
+
+
+    sub_query_end_time = time.time()
+
+    print("sub query total time taken : ", round((sub_query_end_time - lang_query_end_time)*1e3), "ms")
+
+
 
 
     return {
@@ -178,7 +223,8 @@ def fetch_problem_by_id(problem_id: int, user_id):
                 "created_at": sub.created_at,
                 "totalExecTime": sub.total_exec_time,
                 "totalExecMemory": sub.total_exec_memory,
-                "language_name": sub.language_name
+                "language_name": sub.language_name,
+                "mode": sub.submission_answer.mode.value
             } for sub in submissions ],
 
             "languages": [{
@@ -449,30 +495,30 @@ def create_new_problem(data):
 
 
 
-# def fetch_daily_challenge():
-#     problems = Problem.query.all()
-#     if not problems:
-#         return None
+def fetch_daily_challenge():
+    problems = Problem.query.all()
+    if not problems:
+        return None
     
-#     problem = random.choice(problems)
+    problem = random.choice(problems)
     
-#     # Organize tags by category
-#     tag_dict = {}
-#     for pt in problem.tags:
-#         if pt.tag:  # Make sure tag exists
-#             category = pt.tag.category.value if pt.tag.category else "General"
-#             if category not in tag_dict:
-#                 tag_dict[category] = []
-#             tag_dict[category].append(pt.tag.name)
+    # Organize tags by category
+    tag_dict = {}
+    for pt in problem.tags:
+        if pt.tag:  # Make sure tag exists
+            category = pt.tag.category.value if pt.tag.category else "General"
+            if category not in tag_dict:
+                tag_dict[category] = []
+            tag_dict[category].append(pt.tag.name)
     
-#     return {
-#         "id": problem.id,
-#         "title": problem.title,
-#         "description": problem.description,
-#         "difficulty": problem.difficulty.value,
-#         "xp": problem.xp_reward,
-#         "tags": tag_dict  # Now tags are grouped by category
-#     }
+    return {
+        "id": problem.id,
+        "title": problem.title,
+        "description": problem.description,
+        "difficulty": problem.difficulty.value,
+        "xp": problem.xp_reward,
+        "tags": tag_dict  # Now tags are grouped by category
+    }
 
 
         

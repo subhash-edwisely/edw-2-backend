@@ -3,7 +3,7 @@ from datetime import datetime
 import enum
 
 class ModeEnum(enum.Enum):
-    Run= "Run",
+    Run = "Run",
     Submit = "Submit"
 
 
@@ -18,6 +18,8 @@ class SubmissionAnswer(db.Model):
     mode = db.Column(db.Enum(ModeEnum), nullable=False, default=ModeEnum.Submit)
     testcases_executed = db.Column(db.Integer)
     total_testcases = db.Column(db.Integer)
+    time_complexity = db.Column(db.String(255))
+    space_complexity = db.Column(db.String(255))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 

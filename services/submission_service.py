@@ -12,6 +12,7 @@ from models.solved_problem import SolvedProblem
 from models.problem import Problem
 from models.submissions_answer import ModeEnum
 from models.user import User
+from utils.openai import identify_time_and_space_complexity
 import time
 import math
 import base64
@@ -111,7 +112,9 @@ def fetch_submission_by_id(submission_id: int):
         "created_at": submission.created_at,
         "language_name": submission.language_name,
         "total_testcases": submission.submission_answer.total_testcases,
-        "testcases_executed": submission.submission_answer.testcases_executed
+        "testcases_executed": submission.submission_answer.testcases_executed,
+        "time_complexity": submission.submission_answer.time_complexity,
+        "space_complexity": submission.submission_answer.space_complexity
     }
 
 
@@ -269,6 +272,8 @@ def create_new_submission(data):
         db.session.add(submission)
         db.session.flush()  # Get submission.id without committing
 
+        complexity_analysis = identify_time_and_space_complexity(source_code)
+
         # Store SubmissionAnswer
         submission_answer = SubmissionAnswer(
             submission_id=submission.id,
@@ -280,6 +285,8 @@ def create_new_submission(data):
             mode=mode.capitalize(),
             testcases_executed=len(submission_results),  # May be less than total if early exit
             total_testcases=len(submissions_data),
+            time_complexity=complexity_analysis['time_complexity'],
+            space_complexity=complexity_analysis['space_complexity']
         )
         db.session.add(submission_answer)
 
@@ -333,10 +340,6 @@ def create_new_submission(data):
 
                 print("XPPPPPPPPPPPPPPPPPP : ", xp_gain)
 
-                user = User.query.get(user_id)
-                if user:
-                    user.total_xp = (user.total_xp or 0) + xp_gain
-
 
         if(mode.lower() == "submit"):
             problem = Problem.query.get(problem_id)
@@ -346,6 +349,10 @@ def create_new_submission(data):
             
                 if(overall_status == "AC"):
                     problem.accepted_submissions += 1
+
+            user = User.query.get(user_id)
+            if user:
+                user.total_xp = (user.total_xp or 0) + xp_gain
             
 
             problem.acceptance_rate = round((problem.accepted_submissions / problem.total_submissions) * 100, 2)
@@ -356,6 +363,9 @@ def create_new_submission(data):
     except Exception as e:
         db.session.rollback()
         raise Exception(f"Failed to store submission data: {str(e)}")
+    
+
+
 
     # --- Return structured response ---
     return {
@@ -372,6 +382,9 @@ def create_new_submission(data):
         "total_testcases_count": len(submissions_data),
         "language_name": language_name,
         "code": source_code,
+        "time_complexity": complexity_analysis['time_complexity'],
+        "space_complexity": complexity_analysis['space_complexity'],
+        "mode": mode,
         "testcase_results": [
             {
                 "testcase_id": tc.id,
@@ -380,7 +393,7 @@ def create_new_submission(data):
                 "status": (res.get("status") or {}).get("description") or res.get("error") or "Unknown",
                 "time": float(res.get("time") or 0) * 1000,
                 "memory": float(res.get("memory") or 0) / 1024,
-                "output": res.get("stdout") or "",
+                "output": res.get("stdout") or "" if len(res["stdout"]) <= 100 else "Output is too large to display",
                 "stderr": res.get('stderr')
             }
             for tc, res in zip(list(testcases)[:len(submission_results)], submission_results)
