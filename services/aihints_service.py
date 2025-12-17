@@ -57,12 +57,22 @@ class AIHintService:
             hint_id=hint.id
         ).first()
 
+        # If already unlocked, just return the hint content without spending XP
         if already_unlocked:
             return {
                 "message": "Hint already unlocked",
-                "hintId": hint.id
+                "hint": {
+                    "id": hint.id,
+                    "level": hint.level,
+                    "label": hint.label,
+                    "content": hint.content,  # always send content
+                    "cost": hint.cost,
+                    "locked": False
+                },
+                "remainingXP": user.total_xp
             }
 
+        # Not enough XP
         if user.total_xp < hint.cost:
             raise ValueError("Not enough XP")
 
@@ -72,6 +82,7 @@ class AIHintService:
         if not source or not feature:
             raise ValueError("XP metadata not configured")
 
+        # Deduct XP
         user.total_xp -= hint.cost
 
         user_hint = UserAIHint(
@@ -94,6 +105,7 @@ class AIHintService:
         )
 
         db.session.add_all([user, user_hint, xp_txn])
+        db.session.commit()
 
         return {
             "message": "Hint unlocked successfully",
@@ -107,3 +119,4 @@ class AIHintService:
             },
             "remainingXP": user.total_xp
         }
+        
