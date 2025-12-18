@@ -18,7 +18,18 @@ def create_app():
 
     app.config.from_object(Config)
 
-    CORS(app,supports_credentials=True, resources={r"/api/*": {"origins": "*"}})
+    CORS(
+        app,
+        supports_credentials=True,
+        resources={
+            r"/api/*": {
+                "origins": [
+                    "http://localhost:5173",
+                    "https://main.d1uhakbnu1tgdr.amplifyapp.com/"
+                ]
+            }
+        }
+    )
 
     # This must be called before accessing the database engine or session with the app.
     db.init_app(app)
