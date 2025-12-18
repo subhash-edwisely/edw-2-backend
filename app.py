@@ -23,7 +23,7 @@ def create_app():
         supports_credentials=True,
         resources={
             r"/api/*": {
-                "origins": "https://main.d1uhakbnu1tgdr.amplifyapp.com"
+                "origins": "*"
             }
         }
     )
