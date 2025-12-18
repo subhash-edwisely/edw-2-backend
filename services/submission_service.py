@@ -257,7 +257,7 @@ def create_new_submission(data):
 
     avg_time = total_time / testcase_count if testcase_count > 0 else 0
     avg_memory = total_memory / testcase_count if testcase_count > 0 else 0
-
+    xp_gain = 0
     # --- Store everything in DB (only after completion) ---
     try:
         # Create Submission record with final status
@@ -327,7 +327,7 @@ def create_new_submission(data):
             print("existing", existing)
 
 
-            xp_gain = 0
+            
             
             if not existing:
                 xp_gain = Problem.query.get(problem_id).xp_reward
