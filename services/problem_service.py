@@ -243,6 +243,8 @@ def fetch_problem_by_id(problem_id: int, user_id):
                     "id": tc.id,
                     "input": tc.input_data,
                     "expected_output": tc.expected_output,
+                    "input_to_show": tc.input_to_show,
+                    "expected_output_to_show": tc.expected_output_to_show,
                     "explanation": tc.explanation,
                     "isHidden": tc.isHidden,
                     "order": tc.order,
@@ -562,7 +564,7 @@ def fetch_daily_challenge(user_id: int):
             .join(SolvedProblem, SolvedProblem.problem_id == ProblemTag.problem_id)
             .filter(
                 SolvedProblem.user_id == user_id,
-                Tag.category == TagCategoryEnum.Topic
+                # Tag.category == TagCategoryEnum.Topic
             )
             .group_by(Tag.id)
             .order_by(func.count(SolvedProblem.id).desc())

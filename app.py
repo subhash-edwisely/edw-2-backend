@@ -21,12 +21,7 @@ def create_app():
     CORS(
         app,
         supports_credentials=True,
-        resources={
-            r"/api/*": {
-                "origins": "*"
-            }
-        }
-    )
+        resources={r"/api/*": {"origins": "http://localhost:5173/*"}})
 
     # This must be called before accessing the database engine or session with the app.
     db.init_app(app)
