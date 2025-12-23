@@ -18,7 +18,7 @@ import math
 import base64
 from sqlalchemy.orm import joinedload
 
-JUDGE0_URL = "http://16.171.168.56:2358" 
+JUDGE0_URL = "http://13.51.169.92:2358/" 
 POLL_TIMEOUT = 300  # 5 minutes max polling time
 POLL_INTERVAL = 1   # Poll every 1 second
 IST = pytz.timezone('Asia/Kolkata')

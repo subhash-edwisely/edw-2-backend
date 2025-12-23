@@ -401,7 +401,7 @@ def fetch_all_testcases(problem_id: int):
 
 def create_new_problem(data):
     
-    data = get_data()[0]
+    data = get_data()[6]
 
     print(Problem.query.filter_by(title=data.get('title')).first()) 
     if Problem.query.filter_by(title=data.get('title')).first() != None:    
@@ -413,7 +413,7 @@ def create_new_problem(data):
         title=data.get('title'),
         description=data.get('description'),
         difficulty=data.get('difficulty'),
-        xp_reward=data.get('xp_reward', 0),
+        xp_reward=data.get('xpReward', 0),
     )
 
     db.session.add(problem)
@@ -506,7 +506,9 @@ def create_new_problem(data):
 
         testcase = Testcase(
             input_data=tc.get('input'),
+            input_to_show=tc.get('input_to_show'),
             expected_output=tc.get("expectedOutput"),
+            expected_output_to_show=tc.get('expectedOutput_to_show'),
             explanation=tc.get("explanation"),
             isHidden=tc.get('isHidden'),
             order=tc.get('order'),
